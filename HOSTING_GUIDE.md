@@ -264,3 +264,5 @@ ls -t /root/backups/orders_*.json | tail -n +31 | xargs rm -f
 3. Перевірте порти: `netstat -tulpn | grep 5000`
 4. Перевірте файрвол
 
+
+

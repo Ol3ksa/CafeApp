@@ -1310,6 +1310,76 @@
       margin: 0;
       z-index: 100;
     }
+
+    /* Модальне вікно для вибору смаку чаю */
+    .flavor-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flavor-modal-overlay.show {
+      display: flex;
+    }
+
+    .flavor-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 90%;
+      width: 400px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      z-index: 2001;
+    }
+
+    .flavor-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #111827;
+    }
+
+    .flavor-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .flavor-option {
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: white;
+      font-size: 15px;
+      text-align: left;
+    }
+
+    .flavor-option:hover {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .flavor-option.selected {
+      border-color: #2563eb;
+      background: #dbeafe;
+      font-weight: 600;
+    }
+
+    .flavor-modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
   </style>
 </head>
 <body>
@@ -1354,6 +1424,7 @@
       <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
       <div class="mobile-menu" id="mobileMenu">
         <button class="mobile-menu-close" onclick="closeMobileMenu()">×</button>
+        <button class="btn secondary mobile-menu-item" onclick="toggleQuickMode(); closeMobileMenu();">⚡ Швидко</button>
         <button class="btn secondary mobile-menu-item" onclick="setMode('analytics'); closeMobileMenu();">📊 Аналітика</button>
         <button class="btn secondary mobile-menu-item" onclick="openScreenWindow(); closeMobileMenu();">Відкрити екран</button>
         <button class="btn danger mobile-menu-item" onclick="confirmClearAll(); closeMobileMenu();">Очистити всі</button>
@@ -1523,7 +1594,7 @@
         title: "Десерти",
         items: [
           { key: "macaron", label: "Макарон", price: 2.5 },
-          { key: "cheesecake", label: "Чізкейк", price: 2.5 },
+          { key: "cheesecake", label: "Чизкейк", price: 2.5 },
           { key: "medovik", label: "Медовик", price: 2.5 },
           { key: "napoleon", label: "Наполеон", price: 2.5 }
         ]
@@ -1540,9 +1611,10 @@
         key: "other",
         title: "Решта",
         items: [
-          { key: "mandarin", label: "Мандарина", price: 0.5 },
+          { key: "mandarin", label: "Мандарин", price: 0.5 },
           { key: "croissant", label: "Круасан 🥐", price: 1 },
-          { key: "cake", label: "Кекс", price: 1 }
+          { key: "cake", label: "Кекс", price: 1 },
+          { key: "cookie", label: "Печиво", price: 1.5 }
         ]
       }
     ];
@@ -1766,11 +1838,11 @@
       
       // Показуємо в admin view
       if (mobileMenuBtn) {
-        if (currentMode === "admin" && window.innerWidth <= 640) {
-          mobileMenuBtn.style.display = "block";
-        } else {
-          mobileMenuBtn.style.display = "none";
-          closeMobileMenu();
+      if (currentMode === "admin" && window.innerWidth <= 640) {
+        mobileMenuBtn.style.display = "block";
+      } else {
+        mobileMenuBtn.style.display = "none";
+        closeMobileMenu();
         }
       }
       
@@ -1785,15 +1857,96 @@
       }
     }
 
+    // Зберігаємо вибрані смаки для чаю Lovare
+    const builderStateFlavors = {};
+
     function adjustItemCount(itemKey, delta) {
       if (!menuItemIndex.has(itemKey)) return;
+      
+      // Якщо додаємо чай Lovare, показуємо модальне вікно для вибору смаку
+      if (itemKey === "lovareTea" && delta > 0) {
+        showFlavorModal(itemKey);
+        return;
+      }
+      
+      // Якщо зменшуємо чай Lovare, видаляємо останній смак
+      if (itemKey === "lovareTea" && delta < 0) {
+        const currentCount = builderState[itemKey] || 0;
+        if (currentCount > 0) {
+          builderState[itemKey] = currentCount - 1;
+          if (builderStateFlavors[itemKey] && builderStateFlavors[itemKey].length > 0) {
+            builderStateFlavors[itemKey].pop();
+            if (builderStateFlavors[itemKey].length === 0) {
+              delete builderStateFlavors[itemKey];
+            }
+          }
+          if (builderState[itemKey] === 0) {
+            delete builderState[itemKey];
+            delete builderStateFlavors[itemKey];
+          }
+        }
+        updateOrderPreview();
+        return;
+      }
+      
       const next = Math.max(0, (builderState[itemKey] || 0) + delta);
       if (next === 0) {
         delete builderState[itemKey];
+        delete builderStateFlavors[itemKey];
       } else {
         builderState[itemKey] = next;
       }
       updateOrderPreview();
+    }
+
+    let pendingFlavorItemKey = null;
+
+    function showFlavorModal(itemKey) {
+      pendingFlavorItemKey = itemKey;
+      const overlay = document.getElementById("flavorModalOverlay");
+      if (overlay) {
+        overlay.classList.add("show");
+        // Скидаємо вибір
+        document.querySelectorAll(".flavor-option").forEach(opt => {
+          opt.classList.remove("selected");
+        });
+      }
+    }
+
+    function closeFlavorModal() {
+      const overlay = document.getElementById("flavorModalOverlay");
+      if (overlay) {
+        overlay.classList.remove("show");
+      }
+      pendingFlavorItemKey = null;
+    }
+
+    function selectFlavor(flavor) {
+      if (!pendingFlavorItemKey) return;
+      
+      // Візуальний фідбек - виділяємо вибраний смак
+      document.querySelectorAll(".flavor-option").forEach(opt => {
+        opt.classList.remove("selected");
+        if (opt.getAttribute("data-flavor") === flavor) {
+          opt.classList.add("selected");
+        }
+      });
+      
+      // Невелика затримка для візуального фідбеку перед закриттям
+      setTimeout(() => {
+        const itemKey = pendingFlavorItemKey;
+        const currentCount = builderState[itemKey] || 0;
+        builderState[itemKey] = currentCount + 1;
+        
+        // Зберігаємо смак для цього екземпляра
+        if (!builderStateFlavors[itemKey]) {
+          builderStateFlavors[itemKey] = [];
+        }
+        builderStateFlavors[itemKey].push(flavor);
+        
+        closeFlavorModal();
+        updateOrderPreview();
+      }, 150);
     }
 
     function updateMenuCounters() {
@@ -1853,12 +2006,31 @@
         category.items.forEach(item => {
           const quantity = builderState[item.key] || 0;
           if (quantity > 0) {
-            items.push({
-              key: item.key,
-              label: item.label,
-              unitPrice: item.price || 0,
-              quantity
-            });
+            // Для чаю Lovare створюємо окремі позиції для кожного смаку
+            if (item.key === "lovareTea" && builderStateFlavors[item.key]) {
+              const flavors = builderStateFlavors[item.key];
+              // Групуємо смаки за кількістю
+              const flavorCounts = {};
+              flavors.forEach(flavor => {
+                flavorCounts[flavor] = (flavorCounts[flavor] || 0) + 1;
+              });
+              // Створюємо окрему позицію для кожного смаку
+              Object.keys(flavorCounts).forEach(flavor => {
+                items.push({
+                  key: item.key + "_" + flavor,
+                  label: item.label + " (" + flavor + ")",
+                  unitPrice: item.price || 0,
+                  quantity: flavorCounts[flavor]
+                });
+              });
+            } else {
+              items.push({
+                key: item.key,
+                label: item.label,
+                unitPrice: item.price || 0,
+                quantity
+              });
+            }
           }
         });
       });
@@ -1949,6 +2121,7 @@
 
     function clearOrderDraft() {
       builderState = {};
+      Object.keys(builderStateFlavors).forEach(key => delete builderStateFlavors[key]);
       manualExtras = [];
       currentOrderTotal = 0;
       const noteEl = document.getElementById("orderCustomNote");
@@ -2527,26 +2700,26 @@
       options.headers["Cache-Control"] = "no-store";
 
       try {
-        const response = await fetch(path, options);
-        let payload = null;
-        try {
-          if (response.status !== 204) {
-            payload = await response.json();
-          }
-        } catch (err) {
-          // ignore parse errors
+      const response = await fetch(path, options);
+      let payload = null;
+      try {
+        if (response.status !== 204) {
+          payload = await response.json();
         }
+      } catch (err) {
+        // ignore parse errors
+      }
 
-        if (!response.ok) {
-          const message = payload && payload.error ? payload.error : "Немає зв'язку з сервером.";
-          if (response.status === 401) {
-            logout(false);
-            showLogin();
-          }
-          throw new Error(message);
+      if (!response.ok) {
+        const message = payload && payload.error ? payload.error : "Немає зв'язку з сервером.";
+        if (response.status === 401) {
+          logout(false);
+          showLogin();
         }
+        throw new Error(message);
+      }
 
-        return payload;
+      return payload;
       } catch (err) {
         // Якщо помилка мережі та це POST замовлення - зберігаємо в офлайн чергу
         if (!navigator.onLine && method === "POST" && path === API_BASE && body) {
@@ -2853,28 +3026,28 @@
       }
       
       try {
-        socket = io({
+      socket = io({
           auth: { token: authToken },
           reconnection: false, // Вимикаємо автоматичне перепідключення Socket.IO, робимо своє
           transports: ["websocket", "polling"], // Дозволяємо обидва типи транспорту
           timeout: 10000
-        });
+      });
         
-        socket.on("connect", () => {
+      socket.on("connect", () => {
           reconnectAttempts = 0; // Скидаємо лічильник при успішному підключенні
-          setSyncStatus("Онлайн", false);
-          scheduleInactivityCheck();
+        setSyncStatus("Онлайн", false);
+        scheduleInactivityCheck();
           startHeartbeat();
-          if (pollTimer) {
-            stopPolling();
-          }
+        if (pollTimer) {
+          stopPolling();
+        }
           // Оновлюємо дані після перепідключення
           refreshOrders(true).catch(() => {});
-        });
+      });
         
-        socket.on("orders_updated", data => {
-          applyOrders(data, true);
-        });
+      socket.on("orders_updated", data => {
+        applyOrders(data, true);
+      });
         
         socket.on("pong", () => {
           // Отримали відповідь на ping - з'єднання живе
@@ -2883,7 +3056,7 @@
         
         socket.on("disconnect", (reason) => {
           clearHeartbeat();
-          clearInactivityCheck();
+        clearInactivityCheck();
           
           if (reason === "io server disconnect") {
             // Сервер примусово розірвав з'єднання, не намагаємося перепідключитися
@@ -2893,17 +3066,17 @@
             // Інші причини - намагаємося перепідключитися
             setSyncStatus("З'єднання розірвано. Перепідключення...", true);
             attemptReconnect();
-            startPolling("socket disconnected");
+        startPolling("socket disconnected");
           }
-        });
+      });
         
         socket.on("connect_error", (err) => {
           clearHeartbeat();
-          const message = err && err.message ? err.message : "Помилка WebSocket";
-          setSyncStatus(message, true);
+        const message = err && err.message ? err.message : "Помилка WebSocket";
+        setSyncStatus(message, true);
           attemptReconnect();
-          startPolling("socket error");
-        });
+        startPolling("socket error");
+      });
         
         socket.on("error", (err) => {
           console.error("[socket] error:", err);
@@ -4009,6 +4182,21 @@
       }
     });
   </script>
+
+  <!-- Модальне вікно для вибору смаку чаю Lovare -->
+  <div class="flavor-modal-overlay" id="flavorModalOverlay" onclick="closeFlavorModal()">
+    <div class="flavor-modal" onclick="event.stopPropagation()">
+      <div class="flavor-modal-title">Оберіть смак чаю Lovare</div>
+      <div class="flavor-options" id="flavorOptions">
+        <button type="button" class="flavor-option" data-flavor="1001 NIGHTS" onclick="selectFlavor('1001 NIGHTS')">1001 NIGHTS</button>
+        <button type="button" class="flavor-option" data-flavor="ALPINE HERBS" onclick="selectFlavor('ALPINE HERBS')">ALPINE HERBS</button>
+        <button type="button" class="flavor-option" data-flavor="CHAMPAGNE SPLASHES" onclick="selectFlavor('CHAMPAGNE SPLASHES')">CHAMPAGNE SPLASHES</button>
+      </div>
+      <div class="flavor-modal-actions">
+        <button type="button" class="btn secondary" onclick="closeFlavorModal()">Скасувати</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 
