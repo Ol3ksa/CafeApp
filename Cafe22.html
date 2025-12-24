@@ -1,0 +1,4014 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Система замовлень кафе</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    button {
+      cursor: pointer;
+      touch-action: manipulation; /* Запобігає подвійному тапу зуму на мобільних */
+      -webkit-tap-highlight-color: transparent; /* Прибирає підсвітку при тапі на iOS */
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .mode-select {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      gap: 16px;
+    }
+
+    .mode-select h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .mode-select p {
+      margin: 0 0 16px;
+      font-size: 16px;
+      color: #4b5563;
+    }
+
+    .mode-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #2563eb;
+      color: white;
+      font-size: 15px;
+      transition: background 0.15s ease, transform 0.05s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn.secondary {
+      background: #6b7280;
+    }
+
+    .btn.danger {
+      background: #b91c1c;
+    }
+
+    .btn.small {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+
+    .btn.secondary:hover {
+      background: #4b5563;
+    }
+
+    .btn.danger:hover {
+      background: #991b1b;
+    }
+
+    /* admin view */
+
+    #adminView {
+      min-height: 100vh;
+    }
+
+    .admin-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .admin-header > div:first-child {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .admin-header-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #111827;
+    }
+
+    .admin-header-sub {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+
+    .status-legend {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .sync-status {
+      font-size: 11px;
+      color: #16a34a;
+      min-height: 16px;
+      margin-top: 4px;
+    }
+
+    .sync-status.error {
+      color: #b91c1c;
+    }
+
+    .admin-header-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+
+    .admin-header-right .btn {
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .admin-form {
+      background: white;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      margin-bottom: 18px;
+    }
+
+    .admin-form-title {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .admin-form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .admin-form label {
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    .admin-form input,
+    .admin-form textarea {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      width: 100%;
+      resize: vertical;
+      min-height: 36px;
+    }
+
+    .admin-form input:focus,
+    .admin-form textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+    }
+
+    .menu-builder {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 12px 0;
+    }
+
+    .menu-category {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px;
+      background: #f9fafb;
+    }
+
+    .menu-category-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #374151;
+    }
+
+    .menu-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .menu-item-card {
+      border-radius: 12px;
+      background: white;
+      border: 1px solid #dbeafe;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 90px;
+      justify-content: space-between;
+    }
+
+    .menu-item-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .menu-item-price {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .menu-item-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .counter-btn {
+      border: none;
+      background: #e5e7eb;
+      color: #111827;
+      font-size: 18px;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      line-height: 1;
+      font-weight: 600;
+      touch-action: manipulation; /* Запобігає подвійному тапу зуму */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .counter-btn:active {
+      transform: scale(0.94);
+    }
+
+    .menu-count {
+      font-size: 16px;
+      font-weight: 600;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .builder-toolbar {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .manual-extra-row {
+      margin-top: 8px;
+    }
+
+    .manual-extra-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .manual-extra-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .manual-extra-chip {
+      border: 1px solid #dbeafe;
+      border-radius: 12px;
+      padding: 8px;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .manual-chip-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .manual-chip-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .manual-chip-controls .menu-item-controls {
+      flex: 1;
+    }
+
+    .manual-chip-remove {
+      border: none;
+      background: transparent;
+      color: #dc2626;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .admin-form-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Пошук та фільтри */
+    .search-bar {
+      background: white;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .quick-action-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #374151;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .quick-action-btn:hover {
+      background: #f3f4f6;
+      border-color: #2563eb;
+    }
+
+    .quick-action-btn.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    /* Категорії меню з можливістю згортання */
+    .menu-category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .menu-category-toggle {
+      font-size: 18px;
+      color: #6b7280;
+      transition: transform 0.2s ease;
+    }
+
+    .menu-category.collapsed .menu-items {
+      display: none;
+    }
+
+    .menu-category.collapsed .menu-category-toggle {
+      transform: rotate(-90deg);
+    }
+
+    /* Швидке копіювання останнього замовлення */
+    .last-order-quick {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .last-order-quick.show {
+      display: block;
+    }
+
+    .last-order-quick-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .last-order-quick-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .last-order-quick-content {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+
+    .last-order-quick-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* Швидкі комбінації */
+    .quick-combos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .quick-combo-btn {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 2px solid #2563eb;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      color: #1e40af;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .quick-combo-btn:active {
+      transform: scale(0.95);
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    }
+
+    .quick-combo-btn:hover {
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Режим швидкого замовлення */
+    .quick-mode-active .admin-form-row:not(.quick-mode-show) {
+      display: none;
+    }
+
+    .quick-mode-active .quick-mode-show {
+      display: flex !important;
+    }
+
+    .quick-mode-active #quickCombosRow {
+      display: flex !important;
+    }
+
+    #quickModeBtn.active {
+      background: #fbbf24;
+      color: #78350f;
+      border-color: #f59e0b;
+    }
+
+    /* Автозаповнення імен */
+    #orderName {
+      position: relative;
+    }
+
+    datalist {
+      position: absolute;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    datalist option {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    datalist option:hover {
+      background: #f3f4f6;
+    }
+
+    /* Analytics view */
+    #analyticsView {
+      min-height: 100vh;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .analytics-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    .analytics-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .analytics-card-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .analytics-card-subtitle {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .analytics-chart {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 12px;
+    }
+
+    .analytics-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .analytics-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f9fafb;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .analytics-list-item-label {
+      color: #374151;
+    }
+
+    .analytics-list-item-value {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: #2563eb;
+      border: 1px solid rgba(37, 99, 235, 0.3);
+    }
+
+    .btn.tiny {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    .text-button {
+      background: none;
+      border: none;
+      color: #2563eb;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .text-button:hover {
+      text-decoration: underline;
+    }
+
+    .order-summary {
+      margin-top: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .order-summary-items {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .order-summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .order-summary-total {
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .payment-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .payment-row input {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    .order-finance-info {
+      font-size: 13px;
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .admin-columns {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .admin-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* Кнопка scroll to top */
+    .scroll-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #2563eb;
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .scroll-to-top.visible {
+      display: flex;
+    }
+
+    .scroll-to-top:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 640px) {
+      .admin-columns {
+        grid-template-columns: 1fr;
+      }
+
+      /* Мобільна оптимізація для працівника */
+      .app {
+        padding: 8px;
+      }
+
+      .admin-header {
+        position: sticky;
+        top: 0;
+        background: #f3f4f6;
+        padding: 6px 0;
+        margin-bottom: 8px;
+        z-index: 100;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .admin-header > div:first-child {
+        position: relative;
+        padding-right: 50px;
+      }
+
+      .admin-header-title {
+        font-size: 16px;
+        margin-bottom: 2px;
+      }
+
+      .admin-header-sub {
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      /* Приховуємо пояснення статусів на мобільному */
+      .status-legend {
+        display: none;
+      }
+
+      /* Приховуємо кнопки в header на мобільному */
+      /* Випадаюче меню для кнопок на мобільному */
+      .admin-header-right {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: block;
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        background: white;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 101;
+      }
+
+      .mobile-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 280px;
+        height: 100vh;
+        background: white;
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        transition: right 0.3s ease;
+        padding: 60px 16px 16px;
+        overflow-y: auto;
+      }
+
+      .mobile-menu.open {
+        right: 0;
+      }
+
+      .mobile-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+      }
+
+      .mobile-menu-overlay.show {
+        display: block;
+      }
+
+      .mobile-menu-item {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 8px;
+        text-align: left;
+        border-radius: 8px;
+      }
+
+      .mobile-menu-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6b7280;
+      }
+    }
+
+    /* Приховуємо мобільне меню на десктопі */
+    @media (min-width: 641px) {
+      .mobile-menu-btn,
+      .mobile-menu,
+      .mobile-menu-overlay {
+        display: none !important;
+      }
+
+      /* Компактний sync status */
+      .sync-status {
+        font-size: 10px;
+        min-height: 14px;
+      }
+
+      .admin-form {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      .admin-form-title {
+        font-size: 16px;
+      }
+
+      /* Більші кнопки меню на мобільному */
+      .menu-item-card {
+        min-height: 100px;
+        padding: 12px;
+      }
+
+      .menu-item-title {
+        font-size: 15px;
+      }
+
+      .counter-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      .menu-count {
+        font-size: 18px;
+        min-width: 40px;
+      }
+
+      /* Компактніше меню */
+      .menu-items {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .menu-category {
+        padding: 10px;
+      }
+
+      /* Sticky кнопка створення замовлення */
+      .admin-form-footer {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 12px 0;
+        margin-top: 12px;
+        border-top: 2px solid #e5e7eb;
+        z-index: 50;
+      }
+
+      .admin-form-footer .btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      /* Компактні колонки замовлень */
+      .status-column {
+        padding: 8px;
+      }
+
+      .order-card {
+        padding: 10px;
+      }
+
+      .order-number {
+        font-size: 20px;
+      }
+
+      /* Пошук та фільтри */
+      .search-bar {
+        margin-bottom: 12px;
+      }
+
+      .search-bar input {
+        font-size: 16px; /* запобігає zoom на iOS */
+      }
+
+      /* Кнопка scroll to top на мобільному */
+      .scroll-to-top {
+        bottom: 16px;
+        right: 16px;
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+      }
+    }
+
+    .status-column {
+      background: white;
+      border-radius: 16px;
+      padding: 10px;
+      min-height: 120px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .status-title {
+      font-size: 14px;
+      color: #4b5563;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .status-count {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .order-card {
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .order-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .order-number {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .order-name {
+      font-size: 13px;
+      color: #4b5563;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+
+    .order-time {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .order-items {
+      font-size: 13px;
+      color: #111827;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .order-item-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .order-finance {
+      font-size: 12px;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    .order-note {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    .order-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .empty {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 8px;
+    }
+
+    /* screen view */
+
+    #screenView {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #111827, #020617);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .screen-inner {
+      width: 100%;
+      max-width: 1100px;
+      text-align: center;
+      position: relative;
+    }
+
+    .screen-title {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .screen-sub {
+      font-size: 16px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+
+    .ready-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .ready-item {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      padding: clamp(18px, 4vw, 36px);
+      border-radius: 22px;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(42px, 8vw, 72px);
+      font-weight: 800;
+      box-shadow: 0 18px 50px rgba(22, 163, 74, 0.45);
+      border: 4px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .ready-item.pop {
+      animation: readyPop 0.7s ease;
+    }
+
+    @keyframes readyPop {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      60% {
+        transform: scale(1.05);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .screen-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 16px;
+      font-size: 16px;
+      color: #f1f5f9;
+    }
+
+    .screen-meta strong {
+      color: #facc15;
+    }
+
+    .recent-done {
+      margin-top: 12px;
+      font-size: 15px;
+      color: #a5b4fc;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .recent-done-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 250, 252, 0.1);
+    }
+
+    .screen-footer {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .screen-footer span {
+      color: #e5e7eb;
+    }
+
+    /* in-progress grid on guest screen */
+
+    .inprogress-section-title {
+      margin-top: 24px;
+      margin-bottom: 8px;
+      font-size: 18px;
+      color: #e5e7eb;
+    }
+
+    .inprogress-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .inprogress-item {
+      background: radial-gradient(circle at top, #4b5563, #020617);
+      border-radius: 18px;
+      padding: 16px 12px;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.7);
+      border: 2px solid rgba(148, 163, 184, 0.6);
+      animation: inProgressPulse 2.4s ease-in-out infinite;
+    }
+
+    .inprogress-item-number {
+      font-size: clamp(30px, 5vw, 44px);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #e5e7eb;
+    }
+
+    .inprogress-item-label {
+      margin-top: 4px;
+      font-size: 13px;
+      color: #e5e7eb;
+      opacity: 0.9;
+    }
+
+    @keyframes inProgressPulse {
+      0% {
+        transform: translateY(0);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.7);
+      }
+      50% {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 40px rgba(30, 64, 175, 0.55);
+      }
+      100% {
+        transform: translateY(0);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.7);
+      }
+    }
+
+    .screen-no-orders {
+      font-size: 20px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .screen-hint {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    .selected-role {
+      font-size: 15px;
+      color: #111827;
+    }
+
+    .login-form {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: min(320px, 90vw);
+      margin-top: 12px;
+    }
+
+    .login-form.active {
+      display: flex;
+    }
+
+    .login-form input {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      font-size: 15px;
+    }
+
+    .login-form input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+    }
+
+    .login-error {
+      font-size: 13px;
+      color: #b91c1c;
+      min-height: 18px;
+    }
+
+    #screenLogoutBtn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      margin: 0;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginView" class="mode-select">
+    <h1>Система замовлень кафе</h1>
+    <p>Оберіть роль та введіть пароль, щоб продовжити.</p>
+    <div class="mode-buttons">
+      <button class="btn" onclick="selectRole('admin')">Я працівник (вводжу замовлення)</button>
+      <button class="btn secondary" onclick="selectRole('screen')">Я великий екран для гостей</button>
+    </div>
+    <div class="selected-role" id="selectedRoleInfo" style="display:none;">
+      Обрана роль: <span id="selectedRoleText"></span>
+    </div>
+    <div class="login-form" id="loginForm">
+      <input id="passwordInput" type="password" placeholder="Пароль" autocomplete="current-password" />
+      <button class="btn" id="loginButton">Увійти</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+    <p class="screen-hint">
+      Порада: використай пароль для ролі працівника на ноутбуці, а для ролі екрана — на телевізорі.
+    </p>
+  </div>
+
+  <div id="adminView" style="display:none;">
+    <div class="app">
+      <div class="admin-header">
+        <div>
+          <div class="admin-header-title">Кафе – замовлення</div>
+          <div class="admin-header-sub" id="statsText"></div>
+          <div class="status-legend" id="statusLegend"></div>
+          <div class="sync-status" id="syncStatus"></div>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" style="display:none;">☰</button>
+        <div class="admin-header-right">
+          <button class="btn secondary small" id="quickModeBtn" onclick="toggleQuickMode()" title="Швидке замовлення">⚡ Швидко</button>
+          <button class="btn secondary" onclick="setMode('analytics')">📊 Аналітика</button>
+          <button class="btn secondary" onclick="openScreenWindow()">Відкрити екран на іншому екрані</button>
+          <button class="btn danger small" onclick="confirmClearAll()">Очистити всі замовлення</button>
+          <button class="btn small secondary" id="logoutBtn" onclick="logout()">Вийти</button>
+        </div>
+      </div>
+      <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+      <div class="mobile-menu" id="mobileMenu">
+        <button class="mobile-menu-close" onclick="closeMobileMenu()">×</button>
+        <button class="btn secondary mobile-menu-item" onclick="setMode('analytics'); closeMobileMenu();">📊 Аналітика</button>
+        <button class="btn secondary mobile-menu-item" onclick="openScreenWindow(); closeMobileMenu();">Відкрити екран</button>
+        <button class="btn danger mobile-menu-item" onclick="confirmClearAll(); closeMobileMenu();">Очистити всі</button>
+        <button class="btn secondary mobile-menu-item" id="mobileLogoutBtn" onclick="logout(); closeMobileMenu();">Вийти</button>
+      </div>
+
+      <div class="last-order-quick" id="lastOrderQuick">
+        <div class="last-order-quick-header">
+          <div class="last-order-quick-title">Останнє замовлення</div>
+          <button class="text-button" onclick="hideLastOrderQuick()">✕</button>
+        </div>
+        <div class="last-order-quick-content" id="lastOrderQuickContent"></div>
+        <button class="btn small secondary last-order-quick-btn" onclick="copyLastOrder()">Скопіювати це замовлення</button>
+      </div>
+
+      <div class="admin-form">
+        <div class="admin-form-title">Нове замовлення</div>
+        <div class="admin-form-row">
+          <label for="orderName">Ім'я гостя або номер столика (необов'язково, але бажано)</label>
+          <input id="orderName" type="text" list="nameSuggestions" placeholder="Наприклад: Марія, Столик 3" autocomplete="off" />
+          <datalist id="nameSuggestions"></datalist>
+        </div>
+        <div class="admin-form-row" id="quickCombosRow" style="display:none;">
+          <label>⭐ Популярні комбінації</label>
+          <div class="quick-combos" id="quickCombos"></div>
+        </div>
+        <div class="admin-form-row">
+          <label>Меню (додавайте позиції великими кнопками)</label>
+          <div class="menu-builder" id="menuBuilder"></div>
+        </div>
+        <div class="admin-form-row manual-extra-row">
+          <label for="manualItemInput">Немає в меню? Додайте вручну</label>
+          <div class="manual-extra-controls">
+            <input id="manualItemNameInput" type="text" placeholder="Назва позиції" />
+            <input id="manualItemPriceInput" type="number" min="0" step="0.01" placeholder="Ціна, €" />
+            <button class="btn secondary small" type="button" id="manualItemAddBtn">Додати</button>
+          </div>
+          <div class="manual-extra-list" id="manualExtrasList"></div>
+        </div>
+        <div class="admin-form-row">
+          <label for="orderCustomNote">Побажання (наприклад: без цукру, забрати з собою)</label>
+          <input id="orderCustomNote" type="text" placeholder="Додати коротку примітку (необов'язково)" />
+        </div>
+        <div class="admin-form-row">
+          <label for="orderItems">Склад замовлення (генерується автоматично)</label>
+          <textarea id="orderItems" rows="3" placeholder="Додайте позиції через кнопки вище" readonly></textarea>
+          <div class="builder-toolbar">
+            <button class="btn small secondary" type="button" id="clearBuilderBtn">Очистити</button>
+          </div>
+        </div>
+        <div class="order-summary">
+          <div class="order-summary-items" id="orderSummaryList"></div>
+          <div class="order-summary-total">
+            <span>Сума замовлення</span>
+            <span id="orderTotalText">0,00 €</span>
+          </div>
+          <div class="payment-row">
+            <label for="clientPaidInput">Клієнт дав</label>
+            <input id="clientPaidInput" type="number" min="0" step="0.01" placeholder="0,00" />
+          </div>
+          <div class="order-finance-info">
+            <span>Решта</span>
+            <strong id="changeDueText">0,00 €</strong>
+          </div>
+        </div>
+        <div class="admin-form-footer">
+          <div class="hint">
+            Після натискання кнопки замовлення отримає номер (1, 2, 3, ...).
+          </div>
+          <button class="btn" id="addOrderBtn">Створити замовлення</button>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <input id="searchOrdersInput" type="text" placeholder="🔍 Пошук замовлень (ім'я, номер, позиції)..." />
+      </div>
+      <div class="quick-actions">
+        <button class="quick-action-btn" data-filter="all" onclick="setFilter('all')">Всі</button>
+        <button class="quick-action-btn" data-filter="new" onclick="setFilter('new')">Нові</button>
+        <button class="quick-action-btn" data-filter="in_progress" onclick="setFilter('in_progress')">В роботі</button>
+        <button class="quick-action-btn" data-filter="ready" onclick="setFilter('ready')">Готові</button>
+        <button class="quick-action-btn" data-filter="done" onclick="setFilter('done')">Видані</button>
+      </div>
+      <div id="adminColumns" class="admin-columns"></div>
+    </div>
+    <button class="scroll-to-top" id="scrollToTopBtn" onclick="scrollToTop()" title="До форми замовлення">↑</button>
+  </div>
+
+  <div id="analyticsView" style="display:none;">
+    <div class="app">
+      <div class="admin-header">
+        <div>
+          <div class="admin-header-title">📊 Аналітика замовлень</div>
+          <div class="admin-header-sub">Статистика та аналіз роботи кафе</div>
+        </div>
+        <button class="mobile-menu-btn" id="analyticsMobileMenuBtn" onclick="toggleAnalyticsMobileMenu()" style="display:none;">☰</button>
+        <div class="admin-header-right">
+          <button class="btn secondary" onclick="setMode('admin')">← Назад до замовлень</button>
+        </div>
+      </div>
+      <div class="mobile-menu-overlay" id="analyticsMobileMenuOverlay" onclick="closeAnalyticsMobileMenu()"></div>
+      <div class="mobile-menu" id="analyticsMobileMenu">
+        <button class="mobile-menu-close" onclick="closeAnalyticsMobileMenu()">×</button>
+        <button class="btn secondary mobile-menu-item" onclick="setMode('admin'); closeAnalyticsMobileMenu();">← Назад до замовлень</button>
+        <button class="btn secondary mobile-menu-item" id="analyticsMobileLogoutBtn" onclick="logout(); closeAnalyticsMobileMenu();">Вийти</button>
+      </div>
+      <div id="analyticsContent"></div>
+    </div>
+  </div>
+
+  <div id="screenView" style="display:none;">
+    <div class="screen-inner">
+      <button class="btn secondary small" id="screenLogoutBtn" onclick="logout()" style="display:none;">Вийти</button>
+      <div class="screen-title">Готові замовлення</div>
+      <div class="screen-sub">Будь ласка, підійдіть до стійки, коли побачите свій номер.</div>
+      <div class="screen-meta">
+        <div id="waitTimeText"></div>
+        <div id="inProgressText"></div>
+      </div>
+      <div id="inProgressSectionTitle" class="inprogress-section-title" style="display:none;">
+        Зараз готуємо:
+      </div>
+      <div id="inProgressContainer" class="inprogress-grid"></div>
+      <div id="readyContainer" class="ready-grid"></div>
+      <div id="screenEmpty" class="screen-no-orders" style="display:none;">
+        Поки що немає готових замовлень.
+      </div>
+      <div id="recentDone" class="recent-done"></div>
+      <div class="screen-footer">
+        Дякуємо, що завітали. Ваше замовлення готується з любов'ю. <span>🙏</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-G0yteWPZMhUlCT3VkOITkkpFmS6r30YIOCwRvDDDeWGPAHDq6cHruM3aMcMBXNPe" crossorigin="anonymous"></script>
+  <script>
+    const API_BASE = "/api/orders";
+    const AUTH_ENDPOINT = "/api/login";
+    const AUTH_STORAGE_KEY = "cafeSession_v1";
+    const roleLabels = {
+      admin: "Працівник",
+      screen: "Великий екран"
+    };
+
+    const statusConfig = [
+      { key: "new", title: "Нові", color: "#2563eb" },
+      { key: "in_progress", title: "В роботі", color: "#f59e0b" },
+      { key: "ready", title: "Готові (на видачу)", color: "#16a34a" },
+      { key: "done", title: "Видані", color: "#6b7280" }
+    ];
+
+    const menuConfig = [
+      {
+        key: "drinks",
+        title: "Напої",
+        items: [
+          { key: "americano", label: "Американо", price: 1.5 },
+          { key: "cappuccino", label: "Капучино", price: 2 },
+          { key: "latteMacchiato", label: "Лате макіато", price: 2 },
+          { key: "cocoa", label: "Какао", price: 1.5 },
+          { key: "greenfieldTea", label: "Чай Greenfield", price: 1 },
+          { key: "lovareTea", label: "Чай Lovare", price: 1 }
+        ]
+      },
+      {
+        key: "desserts",
+        title: "Десерти",
+        items: [
+          { key: "macaron", label: "Макарон", price: 2.5 },
+          { key: "cheesecake", label: "Чізкейк", price: 2.5 },
+          { key: "medovik", label: "Медовик", price: 2.5 },
+          { key: "napoleon", label: "Наполеон", price: 2.5 }
+        ]
+      },
+      {
+        key: "waffle",
+        title: "Вафельні торти, горішки",
+        items: [
+          { key: "waffleCake", label: "Вафельний торт", price: 1 },
+          { key: "horishok", label: "Горішок", price: 0.5 }
+        ]
+      },
+      {
+        key: "other",
+        title: "Решта",
+        items: [
+          { key: "mandarin", label: "Мандарина", price: 0.5 },
+          { key: "croissant", label: "Круасан 🥐", price: 1 },
+          { key: "cake", label: "Кекс", price: 1 }
+        ]
+      }
+    ];
+
+    const menuItemIndex = new Map();
+    menuConfig.forEach(category => {
+      category.items.forEach(item => {
+        menuItemIndex.set(item.key, item);
+      });
+    });
+
+    const DONE_HIDE_WINDOW_MS = 30 * 60 * 1000;
+    // Максимальний час, який враховуємо в середньому (наприклад, до 90 хв)
+    const MAX_WAIT_MINUTES_FOR_AVG = 90;
+    // Ми рахуємо статистику тільки з моменту відкриття екрана гостей,
+    // щоб старі замовлення з попередніх днів не псували середнє
+    let screenStatsStartTime = null;
+    const WAIT_TIME_SAMPLE_SIZE = 6;
+
+    let orders = [];
+    let currentMode = "select";
+    let authToken = null;
+    let authRole = null;
+    let selectedRole = null;
+    let socket = null;
+    let lastSerialized = "";
+    let refreshPromise = null;
+    const FALLBACK_POLL_INTERVAL_MS = 4000;
+    const SOCKET_IDLE_GRACE_MS = 15000;
+    let pollTimer = null;
+    let inactivityTimer = null;
+    let lastRealtimeUpdate = 0;
+    let builderState = {};
+    let manualExtras = [];
+    let manualExtraCounter = 0;
+    let hideOldDone = false;
+    let pendingReadyHighlights = new Set();
+    let readyAudioContext = null;
+    let currentOrderTotal = 0;
+    let currentFilter = "all";
+    let searchQuery = "";
+    let lastOrder = null;
+    let searchDebounceTimer = null;
+    let reconnectTimer = null;
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 10;
+    const RECONNECT_BASE_DELAY = 1000; // 1 секунда
+    let heartbeatInterval = null;
+    const HEARTBEAT_INTERVAL_MS = 30000; // 30 секунд
+    let quickMode = false;
+    let nameHistory = new Set();
+    let favoriteCombos = [];
+    let soundEnabled = true;
+    let soundVolume = 0.5;
+
+    function setSyncStatus(message, isError = false) {
+      const el = document.getElementById("syncStatus");
+      if (!el) return;
+      el.textContent = message || "";
+      el.classList.toggle("error", Boolean(isError));
+    }
+
+    function saveSession() {
+      try {
+        if (!authToken || !authRole) {
+          sessionStorage.removeItem(AUTH_STORAGE_KEY);
+        } else {
+          sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ token: authToken, role: authRole }));
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    function loadSession() {
+      try {
+        const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.token && parsed.role) {
+          authToken = parsed.token;
+          authRole = parsed.role;
+        }
+      } catch (err) {
+        // ignore parse errors
+      }
+    }
+
+    function renderMenuBuilder() {
+      const root = document.getElementById("menuBuilder");
+      if (!root) return;
+      const html = menuConfig
+        .map(category => {
+          const itemsHtml = category.items
+            .map(item => {
+              return (
+                '<div class="menu-item-card" data-item="' +
+                item.key +
+                '">' +
+                '<div class="menu-item-title">' +
+                item.label +
+                "</div>" +
+                '<div class="menu-item-price">' +
+                formatPriceValue(item.price || 0) +
+                "</div>" +
+                '<div class="menu-item-controls">' +
+                '<button type="button" class="counter-btn" data-action="decrement" data-item="' +
+                item.key +
+                '">−</button>' +
+                '<div class="menu-count" data-count="' +
+                item.key +
+                '">0</div>' +
+                '<button type="button" class="counter-btn" data-action="increment" data-item="' +
+                item.key +
+                '">+</button>' +
+                "</div>" +
+                "</div>"
+              );
+            })
+            .join("");
+          return (
+            '<div class="menu-category" data-category="' +
+            category.key +
+            '">' +
+            '<div class="menu-category-header" onclick="toggleCategory(\'' +
+            category.key +
+            '\')">' +
+            '<div class="menu-category-title">' +
+            category.title +
+            "</div>" +
+            '<div class="menu-category-toggle">▼</div>' +
+            "</div>" +
+            '<div class="menu-items">' +
+            itemsHtml +
+            "</div>" +
+            "</div>"
+          );
+        })
+        .join("");
+      root.innerHTML = html;
+    }
+
+    function toggleCategory(categoryKey) {
+      const categoryEl = document.querySelector(`[data-category="${categoryKey}"]`);
+      if (categoryEl) {
+        categoryEl.classList.toggle("collapsed");
+      }
+    }
+
+    // Scroll to top функція
+    function scrollToTop() {
+      const adminForm = document.querySelector(".admin-form");
+      if (adminForm) {
+        adminForm.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      closeMobileMenu();
+      closeAnalyticsMobileMenu();
+    }
+
+    // Показ/приховування кнопки scroll to top
+    function handleScroll() {
+      const scrollBtn = document.getElementById("scrollToTopBtn");
+      if (!scrollBtn) return;
+      // Показуємо тільки в admin view
+      if (currentMode !== "admin") {
+        scrollBtn.classList.remove("visible");
+        return;
+      }
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      if (scrollY > 300) {
+        scrollBtn.classList.add("visible");
+      } else {
+        scrollBtn.classList.remove("visible");
+      }
+    }
+
+    // Мобільне меню
+    function toggleMobileMenu() {
+      const menu = document.getElementById("mobileMenu");
+      const overlay = document.getElementById("mobileMenuOverlay");
+      if (menu && overlay) {
+        menu.classList.toggle("open");
+        overlay.classList.toggle("show");
+      }
+    }
+
+    function closeMobileMenu() {
+      const menu = document.getElementById("mobileMenu");
+      const overlay = document.getElementById("mobileMenuOverlay");
+      if (menu && overlay) {
+        menu.classList.remove("open");
+        overlay.classList.remove("show");
+      }
+    }
+
+    // Мобільне меню для analytics view
+    function toggleAnalyticsMobileMenu() {
+      const menu = document.getElementById("analyticsMobileMenu");
+      const overlay = document.getElementById("analyticsMobileMenuOverlay");
+      if (menu && overlay) {
+        menu.classList.toggle("open");
+        overlay.classList.toggle("show");
+      }
+    }
+
+    function closeAnalyticsMobileMenu() {
+      const menu = document.getElementById("analyticsMobileMenu");
+      const overlay = document.getElementById("analyticsMobileMenuOverlay");
+      if (menu && overlay) {
+        menu.classList.remove("open");
+        overlay.classList.remove("show");
+      }
+    }
+
+    // Показ мобільного меню на мобільних пристроях
+    function updateMobileMenuVisibility() {
+      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+      const analyticsMobileMenuBtn = document.getElementById("analyticsMobileMenuBtn");
+      
+      // Показуємо в admin view
+      if (mobileMenuBtn) {
+        if (currentMode === "admin" && window.innerWidth <= 640) {
+          mobileMenuBtn.style.display = "block";
+        } else {
+          mobileMenuBtn.style.display = "none";
+          closeMobileMenu();
+        }
+      }
+      
+      // Показуємо в analytics view
+      if (analyticsMobileMenuBtn) {
+        if (currentMode === "analytics" && window.innerWidth <= 640) {
+          analyticsMobileMenuBtn.style.display = "block";
+        } else {
+          analyticsMobileMenuBtn.style.display = "none";
+          closeAnalyticsMobileMenu();
+        }
+      }
+    }
+
+    function adjustItemCount(itemKey, delta) {
+      if (!menuItemIndex.has(itemKey)) return;
+      const next = Math.max(0, (builderState[itemKey] || 0) + delta);
+      if (next === 0) {
+        delete builderState[itemKey];
+      } else {
+        builderState[itemKey] = next;
+      }
+      updateOrderPreview();
+    }
+
+    function updateMenuCounters() {
+      document.querySelectorAll("[data-count]").forEach(el => {
+        const key = el.getAttribute("data-count");
+        if (!key) return;
+        el.textContent = builderState[key] || 0;
+      });
+    }
+
+    function renderManualExtras() {
+      const root = document.getElementById("manualExtrasList");
+      if (!root) return;
+      if (!manualExtras.length) {
+        root.innerHTML = '<div class="hint">Сюди додасться все нестандартне.</div>';
+        return;
+      }
+      root.innerHTML = manualExtras
+        .map(extra => {
+          return (
+            '<div class="manual-extra-chip">' +
+            '<div class="manual-chip-top">' +
+            "<span>" +
+            escapeHtml(extra.label) +
+            "</span>" +
+            "<span>" +
+            formatPriceValue(extra.unitPrice) +
+            "</span>" +
+            "</div>" +
+            '<div class="manual-chip-controls">' +
+            '<div class="menu-item-controls">' +
+            '<button type="button" class="counter-btn" data-manual-action="decrement" data-manual-id="' +
+            extra.id +
+            '">−</button>' +
+            '<div class="menu-count" data-manual-count="' +
+            extra.id +
+            '">' +
+            extra.quantity +
+            "</div>" +
+            '<button type="button" class="counter-btn" data-manual-action="increment" data-manual-id="' +
+            extra.id +
+            '">+</button>' +
+            "</div>" +
+            '<button type="button" class="manual-chip-remove" data-manual-action="remove" data-manual-id="' +
+            extra.id +
+            '">Прибрати</button>' +
+            "</div>" +
+            "</div>"
+          );
+        })
+        .join("");
+    }
+
+    function getStructuredItems() {
+      const items = [];
+      menuConfig.forEach(category => {
+        category.items.forEach(item => {
+          const quantity = builderState[item.key] || 0;
+          if (quantity > 0) {
+            items.push({
+              key: item.key,
+              label: item.label,
+              unitPrice: item.price || 0,
+              quantity
+            });
+          }
+        });
+      });
+      manualExtras.forEach(extra => {
+        if (extra.quantity > 0) {
+          items.push({
+            key: extra.id,
+            label: extra.label,
+            unitPrice: extra.unitPrice,
+            quantity: extra.quantity,
+            isManual: true
+          });
+        }
+      });
+      return items;
+    }
+
+    function calculateOrderTotal(items) {
+      return items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    }
+
+    function buildOrderItemsText(structuredItems) {
+      const items = structuredItems || getStructuredItems();
+      const lines = items.map(
+        item => item.label + " ×" + item.quantity + " — " + formatPriceValue(item.unitPrice * item.quantity)
+      );
+      const noteEl = document.getElementById("orderCustomNote");
+      const note = noteEl ? noteEl.value.trim() : "";
+      if (note) {
+        lines.push("Побажання: " + note);
+      }
+      return lines.join("\n");
+    }
+
+    function updateOrderSummary() {
+      const structuredItems = getStructuredItems();
+      const listEl = document.getElementById("orderSummaryList");
+      const totalEl = document.getElementById("orderTotalText");
+      const changeEl = document.getElementById("changeDueText");
+      const clientPaidInput = document.getElementById("clientPaidInput");
+      if (listEl) {
+        if (!structuredItems.length) {
+          listEl.innerHTML = '<div class="hint">Поки що немає доданих позицій.</div>';
+        } else {
+          listEl.innerHTML = structuredItems
+            .map(item => {
+              return (
+                '<div class="order-summary-row">' +
+                "<span>" +
+                escapeHtml(item.label) +
+                " ×" +
+                item.quantity +
+                "</span>" +
+                "<strong>" +
+                formatPriceValue(item.unitPrice * item.quantity) +
+                "</strong>" +
+                "</div>"
+              );
+            })
+            .join("");
+        }
+      }
+      const total = calculateOrderTotal(structuredItems);
+      currentOrderTotal = total;
+      if (totalEl) {
+        totalEl.textContent = formatPriceValue(total);
+      }
+      let clientPaidValue = null;
+      if (clientPaidInput) {
+        clientPaidValue = parseMoneyInput(clientPaidInput.value);
+      }
+      const change = clientPaidValue !== null ? Math.max(0, clientPaidValue - total) : 0;
+      if (changeEl) {
+        changeEl.textContent = formatPriceValue(change);
+      }
+      return { items: structuredItems, total, clientPaidValue, change };
+    }
+
+    function updateOrderPreview() {
+      const summary = updateOrderSummary();
+      const itemsText = buildOrderItemsText(summary.items);
+      const target = document.getElementById("orderItems");
+      if (target) {
+        target.value = itemsText;
+      }
+      updateMenuCounters();
+    }
+
+    function clearOrderDraft() {
+      builderState = {};
+      manualExtras = [];
+      currentOrderTotal = 0;
+      const noteEl = document.getElementById("orderCustomNote");
+      if (noteEl) {
+        noteEl.value = "";
+      }
+      const manualNameInput = document.getElementById("manualItemNameInput");
+      if (manualNameInput) {
+        manualNameInput.value = "";
+      }
+      const manualPriceInput = document.getElementById("manualItemPriceInput");
+      if (manualPriceInput) {
+        manualPriceInput.value = "";
+      }
+      const clientPaidInput = document.getElementById("clientPaidInput");
+      if (clientPaidInput) {
+        clientPaidInput.value = "";
+      }
+      updateOrderPreview();
+      renderManualExtras();
+    }
+
+    function addManualExtraFromInput() {
+      const nameInput = document.getElementById("manualItemNameInput");
+      const priceInput = document.getElementById("manualItemPriceInput");
+      if (!nameInput || !priceInput) return;
+      const name = nameInput.value.trim();
+      const price = parseMoneyInput(priceInput.value);
+      if (!name) {
+        alert("Вкажіть назву позиції.");
+        return;
+      }
+      if (price === null) {
+        alert("Вкажіть коректну ціну.");
+        return;
+      }
+      manualExtraCounter += 1;
+      manualExtras.push({
+        id: "manual_" + manualExtraCounter,
+        label: name,
+        unitPrice: price,
+        quantity: 1
+      });
+      nameInput.value = "";
+      priceInput.value = "";
+      updateOrderPreview();
+      renderManualExtras();
+    }
+
+    function adjustManualExtra(manualId, delta) {
+      const extra = manualExtras.find(item => item.id === manualId);
+      if (!extra) return;
+      const next = extra.quantity + delta;
+      if (next <= 0) {
+        manualExtras = manualExtras.filter(item => item.id !== manualId);
+      } else {
+        extra.quantity = next;
+      }
+      updateOrderPreview();
+      renderManualExtras();
+    }
+
+    function removeManualExtra(manualId) {
+      manualExtras = manualExtras.filter(item => item.id !== manualId);
+      updateOrderPreview();
+      renderManualExtras();
+    }
+
+    function renderStatusLegend() {
+      const legend = document.getElementById("statusLegend");
+      if (!legend) return;
+      legend.innerHTML =
+        "<strong>Нові</strong> – тільки що прийняті. " +
+        "<strong>В роботі</strong> – готуємо. " +
+        "<strong>Готові</strong> – чекають гостя. " +
+        "<strong>Видані</strong> – гість забрав.";
+    }
+
+    function getDoneReferenceTimestamp(order) {
+      return order.doneAt || order.readyAt || order.inProgressAt || order.createdAt || 0;
+    }
+
+    function calculateAverageWaitMinutes() {
+      const now = Date.now();
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayStartMs = todayStart.getTime();
+      const maxWaitMs = MAX_WAIT_MINUTES_FOR_AVG * 60 * 1000;
+
+      // Спочатку намагаємося використати дані з поточного сеансу (якщо екран був відкритий)
+      let sample = [];
+      if (screenStatsStartTime) {
+        sample = orders
+          .filter(o => o.readyAt && o.createdAt && o.status === "done")
+          .filter(o => {
+            const created = o.createdAt || 0;
+            const ready = o.readyAt || 0;
+            if (!created || !ready) return false;
+            // Тільки замовлення, які стали готові після відкриття екрана
+            if (ready < screenStatsStartTime) return false;
+            const wait = Math.max(0, ready - created);
+            if (!wait || wait > maxWaitMs) return false;
+            return true;
+          })
+          .sort((a, b) => (b.readyAt || 0) - (a.readyAt || 0))
+          .slice(0, WAIT_TIME_SAMPLE_SIZE);
+      }
+
+      // Якщо немає достатньо даних з поточного сеансу, використовуємо дані за сьогодні
+      if (sample.length < 3) {
+        sample = orders
+          .filter(o => o.readyAt && o.createdAt && o.status === "done")
+          .filter(o => {
+            const created = o.createdAt || 0;
+            const ready = o.readyAt || 0;
+            if (!created || !ready) return false;
+            // Тільки замовлення за сьогодні
+            if (ready < todayStartMs) return false;
+            const wait = Math.max(0, ready - created);
+            // ігноруємо аномально великі значення
+            if (!wait || wait > maxWaitMs) return false;
+            return true;
+          })
+          .sort((a, b) => (b.readyAt || 0) - (a.readyAt || 0))
+          .slice(0, WAIT_TIME_SAMPLE_SIZE);
+      }
+
+      // Якщо все ще немає даних за сьогодні, використовуємо останні готові замовлення (не старші за 24 години)
+      if (sample.length < 2) {
+        const dayAgo = now - 24 * 60 * 60 * 1000;
+        sample = orders
+          .filter(o => o.readyAt && o.createdAt && o.status === "done")
+          .filter(o => {
+            const created = o.createdAt || 0;
+            const ready = o.readyAt || 0;
+            if (!created || !ready) return false;
+            // Тільки замовлення за останні 24 години
+            if (ready < dayAgo) return false;
+            const wait = Math.max(0, ready - created);
+            if (!wait || wait > maxWaitMs) return false;
+            return true;
+          })
+          .sort((a, b) => (b.readyAt || 0) - (a.readyAt || 0))
+          .slice(0, WAIT_TIME_SAMPLE_SIZE);
+      }
+
+      if (!sample.length) {
+        return null;
+      }
+
+      const avgMs =
+        sample.reduce((sum, item) => sum + Math.max(0, item.readyAt - item.createdAt), 0) /
+        sample.length;
+      return Math.max(1, Math.round(avgMs / 60000));
+    }
+
+    function describeInProgressOrders() {
+      const numbers = orders
+        .filter(o => o.status === "in_progress")
+        .map(o => o.number)
+        .filter(n => n != null)
+        .sort((a, b) => a - b);
+      if (!numbers.length) {
+        return "Зараз готуємо: немає активних замовлень";
+      }
+      return "Зараз готуємо: №" + numbers.join(", №");
+    }
+
+    function handleFreshReadyOrders(ids) {
+      pendingReadyHighlights = new Set(ids);
+      playReadySound();
+    }
+
+    function playReadySound() {
+      if (!soundEnabled) return;
+      try {
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) return;
+        if (!readyAudioContext) {
+          readyAudioContext = new AudioContextConstructor();
+        }
+        if (readyAudioContext.state === "suspended") {
+          readyAudioContext.resume();
+        }
+        const ctx = readyAudioContext;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(920, now);
+        gain.gain.setValueAtTime(0.0008 * soundVolume, now);
+        gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } catch (err) {
+        // ignore audio errors
+      }
+    }
+
+    function playNewOrderSound() {
+      if (!soundEnabled) return;
+      try {
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) return;
+        if (!readyAudioContext) {
+          readyAudioContext = new AudioContextConstructor();
+        }
+        if (readyAudioContext.state === "suspended") {
+          readyAudioContext.resume();
+        }
+        const ctx = readyAudioContext;
+        const now = ctx.currentTime;
+        // Інший звук для нового замовлення (вищий тон, коротший)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1200, now);
+        gain.gain.setValueAtTime(0.001 * soundVolume, now);
+        gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } catch (err) {
+        // ignore audio errors
+      }
+    }
+
+    // Швидкі комбінації - автоматична генерація на основі статистики
+    function analyzePopularCombinations() {
+      const doneOrders = orders.filter(o => o.status === "done" && Array.isArray(o.items) && o.items.length >= 2);
+      
+      if (doneOrders.length === 0) {
+        // Якщо немає замовлень, повертаємо порожній список
+        return [];
+      }
+
+      // Збираємо всі комбінації з 2-3 позицій
+      const comboCounts = new Map();
+      
+      doneOrders.forEach(order => {
+        const items = order.items.filter(item => item.key && !item.isManual);
+        if (items.length < 2) return;
+
+        // Генеруємо комбінації з 2 позицій
+        for (let i = 0; i < items.length; i++) {
+          for (let j = i + 1; j < items.length; j++) {
+            const combo = [
+              { key: items[i].key, qty: items[i].quantity || 1 },
+              { key: items[j].key, qty: items[j].quantity || 1 }
+            ].sort((a, b) => a.key.localeCompare(b.key)); // Сортуємо для унікальності
+
+            const comboKey = JSON.stringify(combo);
+            const current = comboCounts.get(comboKey) || { combo, count: 0 };
+            current.count += 1;
+            comboCounts.set(comboKey, current);
+          }
+        }
+
+        // Також додаємо комбінації з 3 позицій (якщо є)
+        if (items.length >= 3) {
+          for (let i = 0; i < items.length - 2; i++) {
+            for (let j = i + 1; j < items.length - 1; j++) {
+              for (let k = j + 1; k < items.length; k++) {
+                const combo = [
+                  { key: items[i].key, qty: items[i].quantity || 1 },
+                  { key: items[j].key, qty: items[j].quantity || 1 },
+                  { key: items[k].key, qty: items[k].quantity || 1 }
+                ].sort((a, b) => a.key.localeCompare(b.key));
+
+                const comboKey = JSON.stringify(combo);
+                const current = comboCounts.get(comboKey) || { combo, count: 0 };
+                current.count += 1;
+                comboCounts.set(comboKey, current);
+              }
+            }
+          }
+        }
+      });
+
+      // Сортуємо за популярністю і беремо топ-6
+      const popularCombos = Array.from(comboCounts.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6)
+        .map(item => {
+          // Створюємо назву комбінації
+          const labels = item.combo.map(comboItem => {
+            const menuItem = menuItemIndex.get(comboItem.key);
+            const label = menuItem ? menuItem.label : comboItem.key;
+            const qty = comboItem.qty > 1 ? ` ×${comboItem.qty}` : "";
+            return label + qty;
+          });
+          const name = labels.join(" + ");
+
+          return {
+            name: name,
+            items: item.combo,
+            count: item.count
+          };
+        });
+
+      return popularCombos;
+    }
+
+    function loadFavoriteCombos() {
+      try {
+        // Аналізуємо замовлення та генеруємо популярні комбінації
+        favoriteCombos = analyzePopularCombinations();
+        
+        // Зберігаємо в localStorage для швидкого доступу
+        saveFavoriteCombos();
+      } catch (err) {
+        console.error("Failed to load favorite combos:", err);
+        favoriteCombos = [];
+      }
+    }
+
+    function updateFavoriteCombos() {
+      // Оновлюємо популярні комбінації на основі поточних замовлень
+      favoriteCombos = analyzePopularCombinations();
+      saveFavoriteCombos();
+      renderQuickCombos();
+    }
+
+    function saveFavoriteCombos() {
+      try {
+        localStorage.setItem("cafeFavoriteCombos", JSON.stringify(favoriteCombos));
+      } catch (err) {
+        console.error("Failed to save favorite combos:", err);
+      }
+    }
+
+    function renderQuickCombos() {
+      const container = document.getElementById("quickCombos");
+      if (!container) return;
+      
+      if (!favoriteCombos.length) {
+        container.innerHTML = '<div class="hint">Поки немає збережених комбінацій</div>';
+        return;
+      }
+
+      container.innerHTML = favoriteCombos.map((combo, idx) => {
+        return `<button class="quick-combo-btn" onclick="applyQuickCombo(${idx})">${escapeHtml(combo.name)}</button>`;
+      }).join("");
+    }
+
+    function applyQuickCombo(index) {
+      const combo = favoriteCombos[index];
+      if (!combo) return;
+
+      builderState = {};
+      manualExtras = [];
+      
+      combo.items.forEach(item => {
+        if (menuItemIndex.has(item.key)) {
+          builderState[item.key] = item.qty || 1;
+        }
+      });
+
+      updateOrderPreview();
+      renderManualExtras();
+      
+      // Вібро на мобільних
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }
+
+    // Автозаповнення імен
+    function updateNameSuggestions() {
+      const datalist = document.getElementById("nameSuggestions");
+      if (!datalist) return;
+
+      const names = Array.from(nameHistory).filter(n => n && n.trim());
+      datalist.innerHTML = names.map(name => 
+        `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`
+      ).join("");
+    }
+
+    function addToNameHistory(name) {
+      if (!name || !name.trim()) return;
+      nameHistory.add(name.trim());
+      // Зберігаємо в localStorage
+      try {
+        const names = Array.from(nameHistory);
+        localStorage.setItem("cafeNameHistory", JSON.stringify(names.slice(-50))); // Останні 50
+        nameHistory = new Set(names.slice(-50));
+      } catch (err) {
+        console.error("Failed to save name history:", err);
+      }
+      updateNameSuggestions();
+    }
+
+    function loadNameHistory() {
+      try {
+        const saved = localStorage.getItem("cafeNameHistory");
+        if (saved) {
+          const names = JSON.parse(saved);
+          nameHistory = new Set(names);
+        }
+        // Також завантажуємо з існуючих замовлень
+        orders.forEach(order => {
+          if (order.name && order.name.trim()) {
+            nameHistory.add(order.name.trim());
+          }
+        });
+        updateNameSuggestions();
+      } catch (err) {
+        console.error("Failed to load name history:", err);
+      }
+    }
+
+    // Режим швидкого замовлення
+    function toggleQuickMode() {
+      quickMode = !quickMode;
+      const btn = document.getElementById("quickModeBtn");
+      const form = document.querySelector(".admin-form");
+      
+      if (btn) {
+        btn.classList.toggle("active", quickMode);
+        btn.textContent = quickMode ? "⚡ Швидко" : "⚡ Швидко";
+      }
+
+      if (form) {
+        form.classList.toggle("quick-mode-active", quickMode);
+      }
+
+      // Показуємо/ховаємо швидкі комбінації
+      const combosRow = document.getElementById("quickCombosRow");
+      if (combosRow) {
+        combosRow.style.display = quickMode ? "flex" : "none";
+      }
+
+      // Зберігаємо налаштування
+      try {
+        localStorage.setItem("cafeQuickMode", JSON.stringify(quickMode));
+      } catch (err) {
+        console.error("Failed to save quick mode:", err);
+      }
+    }
+
+    function loadQuickMode() {
+      try {
+        const saved = localStorage.getItem("cafeQuickMode");
+        if (saved) {
+          quickMode = JSON.parse(saved);
+          if (quickMode) {
+            toggleQuickMode(); // Застосовуємо налаштування
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load quick mode:", err);
+      }
+    }
+
+    function toggleHideOldDone() {
+      hideOldDone = !hideOldDone;
+      renderAdminView();
+    }
+
+    function startPolling(reason) {
+      if (pollTimer) return;
+      if (reason) {
+        console.debug("[poll] start fallback:", reason);
+      }
+      pollTimer = setInterval(() => {
+        if (authToken) {
+          refreshOrders();
+        }
+      }, FALLBACK_POLL_INTERVAL_MS);
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    function clearInactivityCheck() {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+      }
+    }
+
+    function scheduleInactivityCheck() {
+      clearInactivityCheck();
+      if (!socket || !socket.connected) {
+        return;
+      }
+      inactivityTimer = setTimeout(() => {
+        if (!socket || !socket.connected) {
+          startPolling("socket disconnected");
+          return;
+        }
+        const idleFor = Date.now() - lastRealtimeUpdate;
+        if (idleFor >= SOCKET_IDLE_GRACE_MS) {
+          startPolling("no realtime updates");
+        } else {
+          scheduleInactivityCheck();
+        }
+      }, SOCKET_IDLE_GRACE_MS);
+    }
+
+    function touchRealtimeUpdate() {
+      if (!authToken) return;
+      lastRealtimeUpdate = Date.now();
+      if (socket && socket.connected && pollTimer) {
+        stopPolling();
+      }
+      scheduleInactivityCheck();
+    }
+
+    // Офлайн черга для збереження замовлень
+    let offlineQueue = [];
+    const OFFLINE_QUEUE_KEY = "cafeOfflineQueue";
+
+    function loadOfflineQueue() {
+      try {
+        const saved = localStorage.getItem(OFFLINE_QUEUE_KEY);
+        if (saved) {
+          offlineQueue = JSON.parse(saved);
+        }
+      } catch (err) {
+        console.error("Failed to load offline queue:", err);
+        offlineQueue = [];
+      }
+    }
+
+    function saveOfflineQueue() {
+      try {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
+      } catch (err) {
+        console.error("Failed to save offline queue:", err);
+      }
+    }
+
+    async function syncOfflineQueue() {
+      if (!navigator.onLine || !authToken) return;
+      if (offlineQueue.length === 0) return;
+
+      setSyncStatus("Синхронізація офлайн замовлень...", false);
+      const toSync = [...offlineQueue];
+      offlineQueue = [];
+
+      for (const order of toSync) {
+        try {
+          await apiRequest(API_BASE, { method: "POST", body: order });
+        } catch (err) {
+          // Якщо не вдалося синхронізувати, повертаємо в чергу
+          offlineQueue.push(order);
+          console.error("Failed to sync offline order:", err);
+        }
+      }
+
+      saveOfflineQueue();
+      if (offlineQueue.length === 0) {
+        setSyncStatus("Всі офлайн замовлення синхронізовано", false);
+      } else {
+        setSyncStatus(`Залишилось ${offlineQueue.length} офлайн замовлень`, true);
+      }
+    }
+
+    async function apiRequest(path, { method = "GET", body } = {}) {
+      const options = { method, headers: {}, cache: "no-store" };
+      if (authToken) {
+        options.headers["Authorization"] = "Bearer " + authToken;
+      }
+      if (body !== undefined) {
+        options.body = JSON.stringify(body);
+        options.headers["Content-Type"] = "application/json";
+      }
+      options.headers["Cache-Control"] = "no-store";
+
+      try {
+        const response = await fetch(path, options);
+        let payload = null;
+        try {
+          if (response.status !== 204) {
+            payload = await response.json();
+          }
+        } catch (err) {
+          // ignore parse errors
+        }
+
+        if (!response.ok) {
+          const message = payload && payload.error ? payload.error : "Немає зв'язку з сервером.";
+          if (response.status === 401) {
+            logout(false);
+            showLogin();
+          }
+          throw new Error(message);
+        }
+
+        return payload;
+      } catch (err) {
+        // Якщо помилка мережі та це POST замовлення - зберігаємо в офлайн чергу
+        if (!navigator.onLine && method === "POST" && path === API_BASE && body) {
+          offlineQueue.push(body);
+          saveOfflineQueue();
+          setSyncStatus(`Замовлення збережено офлайн (${offlineQueue.length} в черзі)`, false);
+          // Повертаємо локальну копію для відображення
+          return {
+            id: `offline_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            ...body,
+            status: "new",
+            createdAt: Date.now(),
+            offline: true
+          };
+        }
+        throw err;
+      }
+    }
+
+    async function duplicateOrder(orderId) {
+      const original = orders.find(o => o.id === orderId);
+      if (!original) {
+        alert("Не вдалося знайти це замовлення.");
+        return;
+      }
+      const suggestedName = original.name || "";
+      const newName = prompt("Як підписати нове замовлення?", suggestedName);
+      if (newName === null) {
+        return;
+      }
+      try {
+        const body = {
+          name: newName.trim(),
+          itemsText: original.itemsText || "",
+          items: Array.isArray(original.items) ? original.items : undefined,
+          totalPrice: typeof original.totalPrice === "number" ? original.totalPrice : undefined,
+          clientPaid: typeof original.clientPaid === "number" ? original.clientPaid : undefined,
+          changeDue: typeof original.changeDue === "number" ? original.changeDue : undefined,
+          note: original.note || ""
+        };
+        Object.keys(body).forEach(key => {
+          if (body[key] === undefined || body[key] === null || body[key] === "") {
+            delete body[key];
+          }
+        });
+        await apiRequest(API_BASE, {
+          method: "POST",
+          body
+        });
+        await refreshOrders(true);
+      } catch (err) {
+        alert(err.message || "Не вдалося скопіювати замовлення.");
+      }
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return "";
+      const d = new Date(timestamp);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      return hh + ":" + mm;
+    }
+
+    const currencyFormatter = new Intl.NumberFormat("uk-UA", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 2
+    });
+
+    function formatPriceValue(value) {
+      const number = typeof value === "number" && Number.isFinite(value) ? value : 0;
+      return currencyFormatter.format(Math.round(number * 100) / 100);
+    }
+
+    function parseMoneyInput(value) {
+      if (value === undefined || value === null || value === "") {
+        return null;
+      }
+      const normalized = String(value).replace(",", ".").trim();
+      const parsed = Number.parseFloat(normalized);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        return null;
+      }
+      return Math.round(parsed * 100) / 100;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function selectRole(role) {
+      selectedRole = role;
+      const info = document.getElementById("selectedRoleInfo");
+      const form = document.getElementById("loginForm");
+      if (info) {
+        info.style.display = "block";
+        document.getElementById("selectedRoleText").textContent = roleLabels[role] || role;
+      }
+      form.classList.add("active");
+      document.getElementById("loginError").textContent = "";
+      const passwordInput = document.getElementById("passwordInput");
+      passwordInput.value = "";
+      passwordInput.focus();
+    }
+
+    function showLogin() {
+      currentMode = "select";
+      selectedRole = null;
+      const loginView = document.getElementById("loginView");
+      const adminView = document.getElementById("adminView");
+      const screenView = document.getElementById("screenView");
+      loginView.style.display = "flex";
+      adminView.style.display = "none";
+      screenView.style.display = "none";
+      document.getElementById("logoutBtn").style.display = "none";
+      document.getElementById("screenLogoutBtn").style.display = "none";
+      const info = document.getElementById("selectedRoleInfo");
+      if (info) {
+        info.style.display = "none";
+      }
+      const form = document.getElementById("loginForm");
+      form.classList.remove("active");
+      document.getElementById("passwordInput").value = "";
+      document.getElementById("loginError").textContent = "";
+      setSyncStatus("");
+    }
+
+    async function submitLogin() {
+      const passwordInput = document.getElementById("passwordInput");
+      const loginError = document.getElementById("loginError");
+      if (!selectedRole) {
+        loginError.textContent = "Спочатку виберіть роль.";
+        return;
+      }
+      const password = passwordInput.value.trim();
+      if (!password) {
+        loginError.textContent = "Введіть пароль.";
+        return;
+      }
+      loginError.textContent = "";
+      try {
+        const data = await apiRequest(AUTH_ENDPOINT, {
+          method: "POST",
+          body: { role: selectedRole, password }
+        });
+        authToken = data.token;
+        authRole = data.role;
+        saveSession();
+        selectedRole = null;
+        passwordInput.value = "";
+        await startSession(authRole);
+      } catch (err) {
+        loginError.textContent = err.message || "Не вдалося увійти.";
+      }
+    }
+
+    async function startSession(preferredMode) {
+      if (!authToken || !authRole) {
+        showLogin();
+        if (preferredMode) {
+          selectRole(preferredMode);
+        }
+        return;
+      }
+
+      let mode = preferredMode || (location.hash === "#screen" ? "screen" : "admin");
+      if (mode === "screen" && authRole !== "screen") {
+        showLogin();
+        selectRole("screen");
+        return;
+      }
+      if (mode === "admin" && authRole !== "admin") {
+        showLogin();
+        selectRole("admin");
+        return;
+      }
+
+      setMode(mode, true);
+      await refreshOrders(true);
+      connectSocket(true);
+    }
+
+    function logout(showLoginView = true) {
+      authToken = null;
+      authRole = null;
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+        socket = null;
+      }
+      stopPolling();
+      clearInactivityCheck();
+      clearReconnectTimer();
+      clearHeartbeat();
+      reconnectAttempts = 0;
+      saveSession();
+      orders = [];
+      lastSerialized = "";
+      lastRealtimeUpdate = 0;
+      renderCurrentView();
+      clearOrderDraft();
+      if (showLoginView) {
+        showLogin();
+      }
+    }
+
+    function clearReconnectTimer() {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+    }
+
+    function clearHeartbeat() {
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+    }
+
+    function startHeartbeat() {
+      clearHeartbeat();
+      if (!socket || !socket.connected) return;
+      
+      let lastPongTime = Date.now();
+      const PONG_TIMEOUT_MS = 10000; // 10 секунд на відповідь
+      
+      // Слухаємо pong для перевірки з'єднання
+      const pongHandler = () => {
+        lastPongTime = Date.now();
+      };
+      socket.on("pong", pongHandler);
+      
+      heartbeatInterval = setInterval(() => {
+        if (!socket || !socket.connected) {
+          clearHeartbeat();
+          attemptReconnect();
+          return;
+        }
+        
+        // Перевіряємо, чи отримали відповідь на останній ping
+        const timeSinceLastPong = Date.now() - lastPongTime;
+        if (timeSinceLastPong > PONG_TIMEOUT_MS) {
+          console.debug("[heartbeat] pong timeout, reconnecting");
+          clearHeartbeat();
+          attemptReconnect();
+          return;
+        }
+        
+        // Відправляємо ping для перевірки з'єднання
+        try {
+          socket.emit("ping");
+        } catch (err) {
+          console.debug("[heartbeat] ping failed:", err);
+          clearHeartbeat();
+          attemptReconnect();
+        }
+      }, HEARTBEAT_INTERVAL_MS);
+    }
+
+    function attemptReconnect() {
+      if (!authToken) return;
+      if (reconnectTimer) return; // Вже планується перепідключення
+      
+      if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        setSyncStatus("Не вдалося підключитися. Використовується режим оновлення.", true);
+        startPolling("max reconnect attempts reached");
+        return;
+      }
+
+      reconnectAttempts++;
+      const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttempts - 1), 30000); // Максимум 30 секунд
+      
+      setSyncStatus(`Перепідключення через ${Math.round(delay / 1000)}с... (спроба ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`, true);
+      
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectSocket(true);
+      }, delay);
+    }
+
+    function connectSocket(forceReconnect = false) {
+      if (!authToken) return;
+      if (typeof io === "undefined") {
+        startPolling("socket.io unavailable");
+        return;
+      }
+      
+      clearReconnectTimer();
+      
+      if (socket) {
+        if (!forceReconnect && socket.connected) {
+          return;
+        }
+        socket.removeAllListeners();
+        socket.disconnect();
+        socket = null;
+      }
+      
+      try {
+        socket = io({
+          auth: { token: authToken },
+          reconnection: false, // Вимикаємо автоматичне перепідключення Socket.IO, робимо своє
+          transports: ["websocket", "polling"], // Дозволяємо обидва типи транспорту
+          timeout: 10000
+        });
+        
+        socket.on("connect", () => {
+          reconnectAttempts = 0; // Скидаємо лічильник при успішному підключенні
+          setSyncStatus("Онлайн", false);
+          scheduleInactivityCheck();
+          startHeartbeat();
+          if (pollTimer) {
+            stopPolling();
+          }
+          // Оновлюємо дані після перепідключення
+          refreshOrders(true).catch(() => {});
+        });
+        
+        socket.on("orders_updated", data => {
+          applyOrders(data, true);
+        });
+        
+        socket.on("pong", () => {
+          // Отримали відповідь на ping - з'єднання живе
+          touchRealtimeUpdate();
+        });
+        
+        socket.on("disconnect", (reason) => {
+          clearHeartbeat();
+          clearInactivityCheck();
+          
+          if (reason === "io server disconnect") {
+            // Сервер примусово розірвав з'єднання, не намагаємося перепідключитися
+            setSyncStatus("З'єднання закрито сервером", true);
+            startPolling("server disconnect");
+          } else {
+            // Інші причини - намагаємося перепідключитися
+            setSyncStatus("З'єднання розірвано. Перепідключення...", true);
+            attemptReconnect();
+            startPolling("socket disconnected");
+          }
+        });
+        
+        socket.on("connect_error", (err) => {
+          clearHeartbeat();
+          const message = err && err.message ? err.message : "Помилка WebSocket";
+          setSyncStatus(message, true);
+          attemptReconnect();
+          startPolling("socket error");
+        });
+        
+        socket.on("error", (err) => {
+          console.error("[socket] error:", err);
+          clearHeartbeat();
+          attemptReconnect();
+        });
+        
+      } catch (err) {
+        console.error("[socket] connection failed:", err);
+        setSyncStatus("Помилка підключення", true);
+        attemptReconnect();
+        startPolling("connection exception");
+      }
+    }
+
+    function setMode(mode, force = false) {
+      if (mode === "analytics") {
+        // Analytics доступний тільки для admin
+        if (!authToken || authRole !== "admin") {
+          if (!force) {
+            showLogin();
+            selectRole("admin");
+          }
+          return;
+        }
+      } else {
+        const requiredRole = mode === "screen" ? "screen" : "admin";
+        if (!authToken || authRole !== requiredRole) {
+          if (!force) {
+            showLogin();
+            selectRole(requiredRole);
+          }
+          return;
+        }
+      }
+
+      currentMode = mode;
+
+      // коли відкриваємо екран гостей – починаємо нову статистику часу очікування
+      if (mode === "screen") {
+        screenStatsStartTime = Date.now();
+      } else {
+        screenStatsStartTime = null;
+      }
+
+      const loginView = document.getElementById("loginView");
+      const adminView = document.getElementById("adminView");
+      const screenView = document.getElementById("screenView");
+      const analyticsView = document.getElementById("analyticsView");
+
+      loginView.style.display = "none";
+      adminView.style.display = mode === "admin" ? "block" : "none";
+      screenView.style.display = mode === "screen" ? "flex" : "none";
+      analyticsView.style.display = mode === "analytics" ? "block" : "none";
+
+      if (mode === "admin") {
+        location.hash = "#admin";
+      } else if (mode === "screen") {
+        location.hash = "#screen";
+      } else if (mode === "analytics") {
+        location.hash = "#analytics";
+      } else {
+        location.hash = "";
+      }
+
+      document.getElementById("logoutBtn").style.display = authRole === "admin" && mode !== "analytics" ? "inline-flex" : "none";
+      document.getElementById("screenLogoutBtn").style.display = authRole === "screen" ? "inline-flex" : "none";
+
+      // Оновлюємо видимість мобільного меню
+      updateMobileMenuVisibility();
+
+      renderCurrentView();
+    }
+
+    function openScreenWindow() {
+      if (authRole !== "admin") {
+        alert("Функція доступна лише працівникам.");
+        return;
+      }
+      const base = location.href.split("?")[0].split("#")[0];
+      const url = base + "?view=screen#screen";
+      window.open(url, "_blank");
+    }
+
+    async function confirmClearAll() {
+      const ok = confirm("Точно очистити всі замовлення? Це не можна буде повернути.");
+      if (!ok) return;
+      try {
+        await apiRequest(API_BASE, { method: "DELETE" });
+      } catch (err) {
+        alert(err.message || "Не вдалося очистити замовлення.");
+      }
+    }
+
+    function formatOrderItemsHtml(order) {
+      if (Array.isArray(order.items) && order.items.length) {
+        return order.items
+          .map(item => {
+            const quantity = item.quantity || 0;
+            const unitPrice = typeof item.unitPrice === "number" ? item.unitPrice : 0;
+            return (
+              '<div class="order-item-row">' +
+              "<span>" +
+              escapeHtml(item.label || "Позиція") +
+              " ×" +
+              quantity +
+              "</span>" +
+              "<strong>" +
+              formatPriceValue(unitPrice * quantity) +
+              "</strong>" +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+      const text = order.itemsText || "(без опису)";
+      return escapeHtml(text).replace(/\n/g, "<br>");
+    }
+
+    function renderCurrentView() {
+      if (currentMode === "admin") {
+        renderAdminView();
+      } else if (currentMode === "screen") {
+        renderScreenView();
+      } else if (currentMode === "analytics") {
+        renderAnalyticsView();
+      }
+    }
+
+    // Пошук та фільтрація
+    function matchesSearch(order, query) {
+      if (!query) return true;
+      const q = query.toLowerCase();
+      const name = (order.name || "").toLowerCase();
+      const number = String(order.number || "").toLowerCase();
+      const itemsText = (order.itemsText || "").toLowerCase();
+      const note = (order.note || "").toLowerCase();
+      if (Array.isArray(order.items)) {
+        const itemsLabels = order.items.map(i => (i.label || "").toLowerCase()).join(" ");
+        return (
+          name.includes(q) ||
+          number.includes(q) ||
+          itemsText.includes(q) ||
+          note.includes(q) ||
+          itemsLabels.includes(q)
+        );
+      }
+      return name.includes(q) || number.includes(q) || itemsText.includes(q) || note.includes(q);
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll(".quick-action-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-filter") === filter);
+      });
+      renderAdminView();
+    }
+
+    function performSearch(query) {
+      searchQuery = query;
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+      searchDebounceTimer = setTimeout(() => {
+        renderAdminView();
+      }, 300);
+    }
+
+    // Швидке копіювання останнього замовлення
+    let lastOrderQuickTimer = null;
+    function showLastOrderQuick() {
+      if (!lastOrder) return;
+      const quickEl = document.getElementById("lastOrderQuick");
+      const contentEl = document.getElementById("lastOrderQuickContent");
+      if (!quickEl || !contentEl) return;
+      const name = lastOrder.name || "Без імені";
+      const items = lastOrder.itemsText || "(без опису)";
+      const total = formatPriceValue(lastOrder.totalPrice || 0);
+      contentEl.textContent = `${name} — ${items.substring(0, 60)}${items.length > 60 ? "..." : ""} (${total})`;
+      quickEl.classList.add("show");
+      
+      // Автоматично приховуємо через 5 секунд
+      if (lastOrderQuickTimer) {
+        clearTimeout(lastOrderQuickTimer);
+      }
+      lastOrderQuickTimer = setTimeout(() => {
+        hideLastOrderQuick();
+      }, 5000);
+    }
+
+    function hideLastOrderQuick() {
+      const quickEl = document.getElementById("lastOrderQuick");
+      if (quickEl) {
+        quickEl.classList.remove("show");
+      }
+    }
+
+    function copyLastOrder() {
+      if (!lastOrder) return;
+      const nameInput = document.getElementById("orderName");
+      const noteInput = document.getElementById("orderCustomNote");
+      if (nameInput) {
+        nameInput.value = lastOrder.name || "";
+      }
+      if (noteInput) {
+        noteInput.value = lastOrder.note || "";
+      }
+      if (Array.isArray(lastOrder.items)) {
+        builderState = {};
+        manualExtras = [];
+        lastOrder.items.forEach(item => {
+          if (item.isManual) {
+            manualExtraCounter += 1;
+            manualExtras.push({
+              id: "manual_" + manualExtraCounter,
+              label: item.label,
+              unitPrice: item.unitPrice,
+              quantity: item.quantity
+            });
+          } else if (item.key && menuItemIndex.has(item.key)) {
+            builderState[item.key] = item.quantity || 0;
+          }
+        });
+        updateOrderPreview();
+        renderManualExtras();
+      }
+      const clientPaidInput = document.getElementById("clientPaidInput");
+      if (clientPaidInput && typeof lastOrder.clientPaid === "number") {
+        clientPaidInput.value = lastOrder.clientPaid;
+        updateOrderPreview();
+      }
+      hideLastOrderQuick();
+      if (nameInput) {
+        nameInput.focus();
+      }
+    }
+
+    function renderAdminView() {
+      const columnsRoot = document.getElementById("adminColumns");
+      const statsText = document.getElementById("statsText");
+      if (!columnsRoot || !statsText) return;
+
+      const total = orders.length;
+      const newCount = orders.filter(o => o.status === "new").length;
+      const inProgressCount = orders.filter(o => o.status === "in_progress").length;
+      const readyCount = orders.filter(o => o.status === "ready").length;
+      const doneCount = orders.filter(o => o.status === "done").length;
+
+      statsText.textContent =
+        "Всього замовлень: " +
+        total +
+        " | Нові: " +
+        newCount +
+        " | В роботі: " +
+        inProgressCount +
+        " | Готові: " +
+        readyCount +
+        " | Видані: " +
+        doneCount;
+
+      renderStatusLegend();
+
+      const now = Date.now();
+
+      const html = statusConfig
+        .map(sc => {
+          let list = orders
+            .filter(o => o.status === sc.key)
+            .filter(o => {
+              // Якщо встановлено фільтр, показуємо тільки відповідний статус
+              if (currentFilter !== "all" && currentFilter !== sc.key) {
+                return false;
+              }
+              // Застосовуємо пошук
+              return matchesSearch(o, searchQuery);
+            })
+            .sort((a, b) => a.number - b.number);
+          let hiddenCount = 0;
+
+          if (sc.key === "done" && hideOldDone) {
+            // Сортуємо за часом (новіші спочатку) і залишаємо тільки останні 5
+            const sortedByTime = [...list].sort((a, b) => {
+              const timeA = getDoneReferenceTimestamp(a);
+              const timeB = getDoneReferenceTimestamp(b);
+              return timeB - timeA; // новіші спочатку
+            });
+            const keepCount = 5; // Залишаємо останні 5 замовлень
+            const filtered = sortedByTime.slice(0, keepCount);
+            hiddenCount = list.length - filtered.length;
+            // Зберігаємо оригінальний порядок (за номером) для відображення
+            list = filtered.sort((a, b) => a.number - b.number);
+          }
+
+          const cards =
+            list
+              .map(o => {
+                const number = o.number != null ? o.number : "?";
+                const name = o.name || "Без імені";
+                const time = formatTime(o.createdAt);
+                const itemsHtml = formatOrderItemsHtml(o);
+                const financeParts = [];
+                if (typeof o.totalPrice === "number") {
+                  financeParts.push("Сума: " + formatPriceValue(o.totalPrice));
+                }
+                if (typeof o.clientPaid === "number") {
+                  financeParts.push("Клієнт дав: " + formatPriceValue(o.clientPaid));
+                }
+                if (typeof o.changeDue === "number") {
+                  financeParts.push("Решта: " + formatPriceValue(o.changeDue));
+                }
+                const financeHtml = financeParts.length
+                  ? '<div class="order-finance">' + financeParts.join(" • ") + "</div>"
+                  : "";
+                const noteHtml = o.note
+                  ? '<div class="order-note">Побажання: ' + escapeHtml(o.note) + "</div>"
+                  : "";
+
+                let buttons = "";
+
+                const copyButton =
+                  '<button class="btn small ghost" data-action="duplicate" data-id="' + o.id + '">Скопіювати</button>';
+
+                if (o.status === "new") {
+                  buttons =
+                    '<button class="btn small secondary" data-action="to_in_progress" data-id="' +
+                    o.id +
+                    '">В роботу</button>' +
+                    '<button class="btn small" data-action="to_ready" data-id="' +
+                    o.id +
+                    '">Готово</button>' +
+                    '<button class="btn small danger" data-action="delete" data-id="' +
+                    o.id +
+                    '">Видалити</button>' +
+                    copyButton;
+                } else if (o.status === "in_progress") {
+                  buttons =
+                    '<button class="btn small" data-action="to_ready" data-id="' +
+                    o.id +
+                    '">Готово</button>' +
+                    '<button class="btn small secondary" data-action="to_new" data-id="' +
+                    o.id +
+                    '">Повернути в нові</button>' +
+                    '<button class="btn small danger" data-action="delete" data-id="' +
+                    o.id +
+                    '">Видалити</button>';
+                } else if (o.status === "ready") {
+                  buttons =
+                    '<button class="btn small" data-action="to_done" data-id="' +
+                    o.id +
+                    '">Видані</button>' +
+                    '<button class="btn small secondary" data-action="to_in_progress" data-id="' +
+                    o.id +
+                    '">Повернути в роботу</button>';
+                } else if (o.status === "done") {
+                  buttons =
+                    '<button class="btn small secondary" data-action="to_ready" data-id="' +
+                    o.id +
+                    '">Повернути в готові</button>' +
+                    '<button class="btn small danger" data-action="delete" data-id="' +
+                    o.id +
+                    '">Видалити</button>' +
+                    copyButton;
+                }
+
+                return (
+                  '<div class="order-card">' +
+                  '<div class="order-top">' +
+                  '<div class="order-number">№' +
+                  escapeHtml(number) +
+                  "</div>" +
+                  '<div class="order-name">' +
+                  escapeHtml(name) +
+                  "</div>" +
+                  '<div class="order-time">' +
+                  escapeHtml(time) +
+                  "</div>" +
+                  "</div>" +
+                  '<div class="order-items">' +
+                  itemsHtml +
+                  "</div>" +
+                  financeHtml +
+                  noteHtml +
+                  '<div class="order-actions">' +
+                  buttons +
+                  "</div>" +
+                  "</div>"
+                );
+              })
+              .join("") || '<div class="empty">Поки немає</div>';
+
+          const toggleButton =
+            sc.key === "done"
+              ? '<button class="text-button" data-action="toggle_done_filter">' +
+                (hideOldDone ? "Показати всі" : "Сховати старі") +
+                "</button>"
+              : "";
+          const hiddenNote =
+            sc.key === "done" && hiddenCount > 0
+              ? '<div class="hint">Приховано ' +
+                hiddenCount +
+                " старіших замовлень. Показано останні 5.</div>"
+              : "";
+
+          return (
+            '<div class="status-column" data-status="' +
+            sc.key +
+            '">' +
+            '<div class="status-title">' +
+            '<span style="color:' +
+            sc.color +
+            ';">' +
+            sc.title +
+            "</span>" +
+            '<span class="status-count">' +
+            (searchQuery || currentFilter !== "all" ? list.length : orders.filter(o => o.status === sc.key).length) +
+            "</span>" +
+            toggleButton +
+            "</div>" +
+            '<div class="orders-list">' +
+            cards +
+            "</div>" +
+            hiddenNote +
+            "</div>"
+          );
+        })
+        .join("");
+
+      columnsRoot.innerHTML = html;
+    }
+
+    function renderScreenView() {
+      const readyContainer = document.getElementById("readyContainer");
+      const screenEmpty = document.getElementById("screenEmpty");
+      const inProgressTextEl = document.getElementById("inProgressText");
+      const waitTimeTextEl = document.getElementById("waitTimeText");
+      const recentDoneEl = document.getElementById("recentDone");
+      const inProgressContainer = document.getElementById("inProgressContainer");
+      const inProgressTitleEl = document.getElementById("inProgressSectionTitle");
+      if (!readyContainer || !screenEmpty) return;
+
+      const readyOrders = orders
+        .filter(o => o.status === "ready")
+        .sort((a, b) => a.number - b.number);
+      const inProgressOrders = orders
+        .filter(o => o.status === "in_progress")
+        .sort((a, b) => a.number - b.number);
+
+      if (waitTimeTextEl) {
+        const avg = calculateAverageWaitMinutes();
+        if (avg) {
+          waitTimeTextEl.textContent = "Середній час очікування зараз ~" + avg + " хвилин.";
+        } else {
+          // Якщо немає даних, просто не показуємо нічого або показуємо нейтральне повідомлення
+          waitTimeTextEl.textContent = "";
+        }
+      }
+
+      if (inProgressTextEl) {
+        inProgressTextEl.textContent = describeInProgressOrders();
+      }
+
+      if (recentDoneEl) {
+        const recentDone = orders
+          .filter(o => o.status === "done")
+          .sort((a, b) => getDoneReferenceTimestamp(b) - getDoneReferenceTimestamp(a))
+          .slice(0, 3);
+        if (recentDone.length) {
+          const chips = recentDone
+            .map(o => {
+              const num = o.number != null ? o.number : "?";
+              return '<span class="recent-done-item">№' + escapeHtml(num) + " ✅ вже видано</span>";
+            })
+            .join("");
+          recentDoneEl.innerHTML = "Нещодавно видані: " + chips;
+        } else {
+          recentDoneEl.textContent = "";
+        }
+      }
+
+      // великі картки для замовлень, які зараз готуються
+      if (inProgressContainer && inProgressTitleEl) {
+        if (!inProgressOrders.length) {
+          inProgressContainer.innerHTML = "";
+          inProgressTitleEl.style.display = "none";
+        } else {
+          inProgressTitleEl.style.display = "block";
+          const inProgressHtml = inProgressOrders
+            .map(o => {
+              const num = o.number != null ? o.number : "?";
+              return (
+                '<div class="inprogress-item">' +
+                '<div class="inprogress-item-number">№' +
+                escapeHtml(num) +
+                "</div>" +
+                "</div>"
+              );
+            })
+            .join("");
+          inProgressContainer.innerHTML = inProgressHtml;
+        }
+      }
+
+      if (!readyOrders.length) {
+        readyContainer.innerHTML = "";
+        screenEmpty.style.display = "block";
+        pendingReadyHighlights.clear();
+        return;
+      }
+
+      screenEmpty.style.display = "none";
+
+      const html = readyOrders
+        .map(o => {
+          const num = o.number != null ? o.number : "?";
+          const highlightClass = pendingReadyHighlights.has(o.id) ? " pop" : "";
+          return '<div class="ready-item' + highlightClass + '">№' + escapeHtml(num) + "</div>";
+        })
+        .join("");
+
+      readyContainer.innerHTML = html;
+      pendingReadyHighlights.clear();
+    }
+
+    function renderAnalyticsView() {
+      const contentEl = document.getElementById("analyticsContent");
+      if (!contentEl) return;
+
+      const doneOrders = orders.filter(o => o.status === "done");
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayOrders = doneOrders.filter(o => o.doneAt && new Date(o.doneAt) >= today);
+
+      // Загальна статистика
+      const totalRevenue = doneOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+      const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+      const avgOrderValue = doneOrders.length > 0 ? totalRevenue / doneOrders.length : 0;
+
+      // Статистика по годинах
+      const hourStats = {};
+      doneOrders.forEach(o => {
+        if (o.doneAt) {
+          const hour = new Date(o.doneAt).getHours();
+          hourStats[hour] = (hourStats[hour] || 0) + 1;
+        }
+      });
+      const peakHour = Object.keys(hourStats).reduce((a, b) => hourStats[a] > hourStats[b] ? a : b, null);
+
+      // Топ позиції
+      const itemStats = {};
+      doneOrders.forEach(o => {
+        if (Array.isArray(o.items)) {
+          o.items.forEach(item => {
+            const key = item.label || "Невідомо";
+            itemStats[key] = (itemStats[key] || 0) + (item.quantity || 0);
+          });
+        }
+      });
+      const topItems = Object.entries(itemStats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+      // Середній час очікування
+      const waitTimes = doneOrders
+        .filter(o => o.readyAt && o.createdAt)
+        .map(o => (o.readyAt - o.createdAt) / 60000)
+        .filter(t => t > 0 && t < 180); // Фільтруємо аномалії
+      const avgWaitTime = waitTimes.length > 0
+        ? Math.round(waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length)
+        : 0;
+
+      // Середній час обробки (від створення до видачі)
+      const processingTimes = doneOrders
+        .filter(o => o.doneAt && o.createdAt)
+        .map(o => (o.doneAt - o.createdAt) / 60000)
+        .filter(t => t > 0 && t < 300); // До 5 годин
+      const avgProcessingTime = processingTimes.length > 0
+        ? Math.round(processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length)
+        : 0;
+
+      // Графік завантаженості по годинах (дохід)
+      const hourRevenue = {};
+      doneOrders.forEach(o => {
+        if (o.doneAt) {
+          const hour = new Date(o.doneAt).getHours();
+          hourRevenue[hour] = (hourRevenue[hour] || 0) + (o.totalPrice || 0);
+        }
+      });
+      const maxHourRevenue = Math.max(...Object.values(hourRevenue), 1);
+
+      // Прогноз на наступний день (на основі середнього за останні 7 днів)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const weekOrders = doneOrders.filter(o => o.doneAt && new Date(o.doneAt) >= weekAgo);
+      const avgDailyOrders = weekOrders.length > 0 ? Math.round(weekOrders.length / 7) : 0;
+      const avgDailyRevenue = weekOrders.length > 0 
+        ? weekOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0) / 7 
+        : 0;
+
+      const html = `
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <div class="analytics-card-title">Всього замовлень</div>
+            <div class="analytics-card-value">${doneOrders.length}</div>
+            <div class="analytics-card-subtitle">Виданих за весь час</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Сьогодні</div>
+            <div class="analytics-card-value">${todayOrders.length}</div>
+            <div class="analytics-card-subtitle">Виданих сьогодні</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Загальний дохід</div>
+            <div class="analytics-card-value">${formatPriceValue(totalRevenue)}</div>
+            <div class="analytics-card-subtitle">Всього за весь час</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Дохід сьогодні</div>
+            <div class="analytics-card-value">${formatPriceValue(todayRevenue)}</div>
+            <div class="analytics-card-subtitle">За сьогоднішній день</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Середній чек</div>
+            <div class="analytics-card-value">${formatPriceValue(avgOrderValue)}</div>
+            <div class="analytics-card-subtitle">Середня сума замовлення</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Середній час очікування</div>
+            <div class="analytics-card-value">${avgWaitTime} хв</div>
+            <div class="analytics-card-subtitle">Час від створення до готовності</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Середній час обробки</div>
+            <div class="analytics-card-value">${avgProcessingTime} хв</div>
+            <div class="analytics-card-subtitle">Час від створення до видачі</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Прогноз на завтра</div>
+            <div class="analytics-card-value">${avgDailyOrders} замовлень</div>
+            <div class="analytics-card-subtitle">~${formatPriceValue(avgDailyRevenue)} дохід (середнє за тиждень)</div>
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-card-title">Найпопулярніші позиції</div>
+          <div class="analytics-list">
+            ${topItems.length > 0 ? topItems.map(([item, count]) => `
+              <div class="analytics-list-item">
+                <span class="analytics-list-item-label">${escapeHtml(item)}</span>
+                <span class="analytics-list-item-value">${count} шт</span>
+              </div>
+            `).join("") : '<div class="hint">Поки немає даних</div>'}
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-card-title">Найактивніша година</div>
+          <div class="analytics-card-value">${peakHour !== null ? peakHour + ":00" : "Немає даних"}</div>
+          <div class="analytics-card-subtitle">${peakHour !== null ? hourStats[peakHour] + " замовлень" : ""}</div>
+          ${Object.keys(hourStats).length > 0 ? `
+            <div class="analytics-chart">
+              ${Object.entries(hourStats).sort((a, b) => a[0] - b[0]).map(([hour, count]) => `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <div style="min-width: 50px; font-size: 13px; color: #6b7280;">${hour}:00</div>
+                  <div style="flex: 1; background: #e5e7eb; height: 24px; border-radius: 4px; position: relative;">
+                    <div style="background: #2563eb; height: 100%; width: ${(count / Math.max(...Object.values(hourStats))) * 100}%; border-radius: 4px;"></div>
+                  </div>
+                  <div style="min-width: 40px; text-align: right; font-size: 13px; font-weight: 600;">${count}</div>
+                </div>
+              `).join("")}
+            </div>
+          ` : ""}
+        </div>
+
+        <div class="analytics-card">
+          <div class="analytics-card-title">Графік завантаженості по годинах (дохід)</div>
+          ${Object.keys(hourRevenue).length > 0 ? `
+            <div class="analytics-chart">
+              ${Object.entries(hourRevenue).sort((a, b) => a[0] - b[0]).map(([hour, revenue]) => `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <div style="min-width: 50px; font-size: 13px; color: #6b7280;">${hour}:00</div>
+                  <div style="flex: 1; background: #e5e7eb; height: 24px; border-radius: 4px; position: relative;">
+                    <div style="background: #16a34a; height: 100%; width: ${(revenue / maxHourRevenue) * 100}%; border-radius: 4px;"></div>
+                  </div>
+                  <div style="min-width: 60px; text-align: right; font-size: 13px; font-weight: 600;">${formatPriceValue(revenue)}</div>
+                </div>
+              `).join("")}
+            </div>
+          ` : '<div class="hint">Поки немає даних</div>'}
+        </div>
+      `;
+
+      contentEl.innerHTML = html;
+    }
+
+    function setupAdminEvents() {
+      const addOrderBtn = document.getElementById("addOrderBtn");
+      const orderNameInput = document.getElementById("orderName");
+      const orderItemsInput = document.getElementById("orderItems");
+      const columnsRoot = document.getElementById("adminColumns");
+      const menuBuilderRoot = document.getElementById("menuBuilder");
+      const manualExtrasRoot = document.getElementById("manualExtrasList");
+      const manualAddBtn = document.getElementById("manualItemAddBtn");
+      const manualNameInput = document.getElementById("manualItemNameInput");
+      const manualPriceInput = document.getElementById("manualItemPriceInput");
+      const clearBuilderBtn = document.getElementById("clearBuilderBtn");
+      const customNoteInput = document.getElementById("orderCustomNote");
+      const clientPaidInput = document.getElementById("clientPaidInput");
+
+      if (addOrderBtn) {
+        addOrderBtn.addEventListener("click", async function () {
+          const name = orderNameInput.value.trim();
+          const items = orderItemsInput.value.trim();
+          if (!items) {
+            alert("Будь ласка, впиши хоч щось у поле 'Що замовили'.");
+            return;
+          }
+          const summary = updateOrderSummary();
+          const itemsPayload = summary.items;
+          if (!itemsPayload.length) {
+            alert("Додайте хоча б одну позицію.");
+            return;
+          }
+          const noteEl = document.getElementById("orderCustomNote");
+          const note = noteEl ? noteEl.value.trim() : "";
+          const payload = {
+            name,
+            itemsText: items,
+            items: itemsPayload,
+            totalPrice: Math.round(summary.total * 100) / 100,
+            clientPaid: summary.clientPaidValue,
+            changeDue: summary.change,
+            note
+          };
+          addOrderBtn.disabled = true;
+          try {
+            const response = await apiRequest(API_BASE, { method: "POST", body: payload });
+            // Зберігаємо останнє замовлення для швидкого копіювання
+            if (response && response.id) {
+              lastOrder = response;
+              showLastOrderQuick();
+              // Відмічаємо, що це ми створили замовлення (щоб не програвати звук)
+              localStorage.setItem("cafeLastCreatedOrderId", response.id);
+            }
+            // Додаємо ім'я в історію
+            if (name) {
+              addToNameHistory(name);
+            }
+            orderItemsInput.value = "";
+            orderNameInput.value = "";
+            orderNameInput.focus();
+            clearOrderDraft();
+            await refreshOrders(true);
+          } catch (err) {
+            alert(err.message || "Не вдалося створити замовлення.");
+          } finally {
+            addOrderBtn.disabled = false;
+          }
+        });
+      }
+
+      // Пошук замовлень
+      const searchInput = document.getElementById("searchOrdersInput");
+      if (searchInput) {
+        searchInput.addEventListener("input", function (event) {
+          performSearch(event.target.value.trim());
+        });
+      }
+
+      // Ініціалізація фільтрів
+      setFilter("all");
+
+      if (menuBuilderRoot) {
+        menuBuilderRoot.addEventListener("click", event => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+          const action = target.getAttribute("data-action");
+          const itemKey = target.getAttribute("data-item");
+          if (!action || !itemKey) return;
+          if (action === "increment") {
+            adjustItemCount(itemKey, 1);
+          } else if (action === "decrement") {
+            adjustItemCount(itemKey, -1);
+          }
+        });
+      }
+
+      if (manualExtrasRoot) {
+        manualExtrasRoot.addEventListener("click", event => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+          const action = target.getAttribute("data-manual-action");
+          const manualId = target.getAttribute("data-manual-id");
+          if (!action || !manualId) return;
+          if (action === "increment") {
+            adjustManualExtra(manualId, 1);
+          } else if (action === "decrement") {
+            adjustManualExtra(manualId, -1);
+          } else if (action === "remove") {
+            removeManualExtra(manualId);
+          }
+        });
+      }
+
+      if (manualAddBtn) {
+        manualAddBtn.addEventListener("click", addManualExtraFromInput);
+      }
+
+      [manualNameInput, manualPriceInput].forEach(input => {
+        if (!input) return;
+        input.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            addManualExtraFromInput();
+          }
+        });
+      });
+
+      if (clearBuilderBtn) {
+        clearBuilderBtn.addEventListener("click", clearOrderDraft);
+      }
+
+      if (customNoteInput) {
+        customNoteInput.addEventListener("input", updateOrderPreview);
+      }
+
+      if (clientPaidInput) {
+        clientPaidInput.addEventListener("input", updateOrderPreview);
+      }
+
+      if (columnsRoot) {
+        columnsRoot.addEventListener("click", async function (event) {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+          const action = target.getAttribute("data-action");
+          if (!action) return;
+          if (action === "toggle_done_filter") {
+            toggleHideOldDone();
+            return;
+          }
+          const id = target.getAttribute("data-id");
+          if (!id) return;
+
+          try {
+            if (action === "delete") {
+              const ok = confirm("Видалити це замовлення?");
+              if (!ok) return;
+              await apiRequest(API_BASE + "/" + encodeURIComponent(id), { method: "DELETE" });
+            } else if (action === "to_in_progress") {
+              await apiRequest(API_BASE + "/" + encodeURIComponent(id), {
+                method: "PATCH",
+                body: { status: "in_progress" }
+              });
+            } else if (action === "to_new") {
+              await apiRequest(API_BASE + "/" + encodeURIComponent(id), {
+                method: "PATCH",
+                body: { status: "new" }
+              });
+            } else if (action === "to_ready") {
+              await apiRequest(API_BASE + "/" + encodeURIComponent(id), {
+                method: "PATCH",
+                body: { status: "ready" }
+              });
+            } else if (action === "to_done") {
+              await apiRequest(API_BASE + "/" + encodeURIComponent(id), {
+                method: "PATCH",
+                body: { status: "done" }
+              });
+            } else if (action === "duplicate") {
+              await duplicateOrder(id);
+              return;
+            }
+            await refreshOrders(true);
+          } catch (err) {
+            alert(err.message || "Не вдалося оновити замовлення.");
+          }
+        });
+      }
+    }
+
+    function applyOrders(data, force = false) {
+      const serialized = JSON.stringify(data || []);
+      if (force || serialized !== lastSerialized) {
+        const prevReadyIds = new Set(orders.filter(o => o.status === "ready").map(o => o.id));
+        const prevNewIds = new Set(orders.filter(o => o.status === "new").map(o => o.id));
+        
+        orders = Array.isArray(data) ? data : [];
+        lastSerialized = serialized;
+        
+        // Виявлення нових готових замовлень
+        const currentReadyIds = new Set(orders.filter(o => o.status === "ready").map(o => o.id));
+        const freshReady = [];
+        currentReadyIds.forEach(id => {
+          if (!prevReadyIds.has(id)) {
+            freshReady.push(id);
+          }
+        });
+        if (freshReady.length) {
+          handleFreshReadyOrders(freshReady);
+        }
+        
+        // Виявлення нових замовлень (тільки якщо ми адмін і не ми їх створили)
+        if (authRole === "admin") {
+          const currentNewIds = new Set(orders.filter(o => o.status === "new").map(o => o.id));
+          const freshNew = [];
+          currentNewIds.forEach(id => {
+            if (!prevNewIds.has(id)) {
+              freshNew.push(id);
+            }
+          });
+          if (freshNew.length) {
+            // Перевіряємо, чи це не ми щойно створили замовлення
+            const lastCreated = localStorage.getItem("cafeLastCreatedOrderId");
+            const isOurOrder = freshNew.some(id => id === lastCreated);
+            if (!isOurOrder) {
+              playNewOrderSound();
+              // Вібро на мобільних
+              if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+              }
+            }
+            localStorage.removeItem("cafeLastCreatedOrderId");
+          }
+        }
+        
+        // Оновлюємо історію імен
+        orders.forEach(order => {
+          if (order.name && order.name.trim()) {
+            nameHistory.add(order.name.trim());
+          }
+        });
+        updateNameSuggestions();
+        
+        renderCurrentView();
+        
+        // Оновлюємо популярні комбінації (тільки при зміні замовлень та в admin режимі)
+        if (force && currentMode === "admin") {
+          // Оновлюємо асинхронно, щоб не блокувати рендеринг
+          setTimeout(() => {
+            const newCombos = analyzePopularCombinations();
+            // Оновлюємо тільки якщо є зміни
+            const currentComboKeys = JSON.stringify(favoriteCombos.map(c => c.name).sort());
+            const newComboKeys = JSON.stringify(newCombos.map(c => c.name).sort());
+            if (currentComboKeys !== newComboKeys) {
+              favoriteCombos = newCombos;
+              saveFavoriteCombos();
+              renderQuickCombos();
+            }
+          }, 1000);
+        }
+      }
+      touchRealtimeUpdate();
+      setSyncStatus("Оновлено: " + new Date().toLocaleTimeString());
+    }
+
+    async function refreshOrders(force = false) {
+      if (!authToken) return;
+      if (refreshPromise) {
+        return refreshPromise;
+      }
+      setSyncStatus("Синхронізація...");
+      refreshPromise = (async () => {
+        try {
+          const data = await apiRequest(API_BASE);
+          applyOrders(data, force);
+        } catch (err) {
+          console.error("Помилка синхронізації", err);
+          setSyncStatus(err.message || "Немає зв'язку з сервером.", true);
+        } finally {
+          refreshPromise = null;
+        }
+      })();
+      return refreshPromise;
+    }
+
+    // Обробка повернення з гібернації/сну
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        // Вкладка стала видимою - перевіряємо з'єднання
+        if (authToken && authRole) {
+          // Перевіряємо, чи з'єднання активне
+          if (!socket || !socket.connected) {
+            console.debug("[visibility] reconnecting after visibility change");
+            reconnectAttempts = 0; // Скидаємо лічильник при поверненні
+            connectSocket(true);
+          } else {
+            // Перевіряємо з'єднання через оновлення даних
+            refreshOrders(true).catch(() => {
+              // Якщо оновлення не вдалося, перепідключаємося
+              reconnectAttempts = 0;
+              connectSocket(true);
+            });
+          }
+        }
+      }
+    }
+
+    function handleWindowFocus() {
+      // Вікно отримало фокус - перевіряємо з'єднання
+      if (authToken && authRole) {
+        if (!socket || !socket.connected) {
+          console.debug("[focus] reconnecting after window focus");
+          reconnectAttempts = 0;
+          connectSocket(true);
+        } else {
+          // Перевіряємо з'єднання
+          refreshOrders(true).catch(() => {
+            reconnectAttempts = 0;
+            connectSocket(true);
+          });
+        }
+      }
+    }
+
+    function handleOnline() {
+      // Мережа знову доступна
+      if (authToken && authRole) {
+        console.debug("[online] network restored, reconnecting");
+        reconnectAttempts = 0;
+        if (!socket || !socket.connected) {
+          connectSocket(true);
+        } else {
+          refreshOrders(true).catch(() => {
+            connectSocket(true);
+          });
+        }
+        // Синхронізуємо офлайн чергу
+        setTimeout(() => syncOfflineQueue(), 1000);
+      }
+    }
+
+    function handleOffline() {
+      // Мережа недоступна
+      setSyncStatus("Мережа недоступна", true);
+      startPolling("network offline");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      setupAdminEvents();
+      renderMenuBuilder();
+      renderManualExtras();
+      updateOrderPreview();
+      renderStatusLegend();
+      
+      // Ініціалізація нових функцій
+      loadFavoriteCombos();
+      renderQuickCombos();
+      loadNameHistory();
+      loadQuickMode();
+      loadOfflineQueue();
+      
+      // Синхронізуємо офлайн чергу при завантаженні
+      if (navigator.onLine) {
+        setTimeout(() => syncOfflineQueue(), 2000);
+      }
+      
+      // Завантажуємо налаштування звуку
+      try {
+        const savedSound = localStorage.getItem("cafeSoundEnabled");
+        if (savedSound !== null) {
+          soundEnabled = JSON.parse(savedSound);
+        }
+        const savedVolume = localStorage.getItem("cafeSoundVolume");
+        if (savedVolume !== null) {
+          soundVolume = parseFloat(savedVolume) || 0.5;
+        }
+      } catch (err) {
+        console.error("Failed to load sound settings:", err);
+      }
+      
+      document.getElementById("loginButton").addEventListener("click", submitLogin);
+      document.getElementById("passwordInput").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          submitLogin();
+        }
+      });
+
+      // Обробники для scroll to top та мобільного меню
+      window.addEventListener("scroll", handleScroll);
+      window.addEventListener("resize", updateMobileMenuVisibility);
+      updateMobileMenuVisibility();
+
+      // Обробники для виявлення повернення з гібернації
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("focus", handleWindowFocus);
+      window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
+
+      loadSession();
+
+      const initialViewParam = new URLSearchParams(location.search).get("view");
+      const preferredView =
+        initialViewParam === "screen" ? "screen" : initialViewParam === "admin" ? "admin" : null;
+
+      if (authToken && authRole) {
+        startSession(preferredView).catch(() => {
+          logout();
+        });
+      } else {
+        showLogin();
+        if (preferredView) {
+          selectRole(preferredView);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+

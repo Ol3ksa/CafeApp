@@ -1,0 +1,534 @@
+{
+  "orders": [
+    {
+      "id": "o_aeaea2cbb77841d7ad12e619442ffaa5",
+      "number": 1,
+      "name": "Соня і Марк 2 столик",
+      "itemsText": "Латте ×2 — 4,00 €\nЧізкейк ×1 — 2,00 €",
+      "items": [
+        {
+          "key": "latte",
+          "label": "Латте",
+          "quantity": 2,
+          "unitPrice": 2,
+          "lineTotal": 4
+        },
+        {
+          "key": "cheesecake",
+          "label": "Чізкейк",
+          "quantity": 1,
+          "unitPrice": 2,
+          "lineTotal": 2
+        }
+      ],
+      "totalPrice": 6,
+      "clientPaid": 10,
+      "changeDue": 4,
+      "note": "",
+      "status": "done",
+      "createdAt": 1763467209648,
+      "inProgressAt": 1764107483343,
+      "readyAt": 1764692650663,
+      "doneAt": 1764692786391
+    },
+    {
+      "id": "o_a05a027af7cc492896f51bc67154a3b7",
+      "number": 2,
+      "name": "Ерік і Ларіса 1 столик",
+      "itemsText": "Чай з самовару ×2 — 3,00 €\nГорішок ×5 — 2,50 €",
+      "items": [
+        {
+          "key": "samovarTea",
+          "label": "Чай з самовару",
+          "quantity": 2,
+          "unitPrice": 1.5,
+          "lineTotal": 3
+        },
+        {
+          "key": "horishok",
+          "label": "Горішок",
+          "quantity": 5,
+          "unitPrice": 0.5,
+          "lineTotal": 2.5
+        }
+      ],
+      "totalPrice": 5.5,
+      "clientPaid": 10,
+      "changeDue": 4.5,
+      "note": "",
+      "status": "done",
+      "createdAt": 1763467268793,
+      "inProgressAt": 1764107483796,
+      "readyAt": 1764692649022,
+      "doneAt": 1764692787362
+    },
+    {
+      "id": "o_2433c98873914c338228ae58f4af9b57",
+      "number": 3,
+      "name": "Ярик , 3 стіл",
+      "itemsText": "Капучино ×3 — 6,00 €\nНаполеон ×1 — 2,00 €",
+      "items": [
+        {
+          "key": "cappuccino",
+          "label": "Капучино",
+          "quantity": 3,
+          "unitPrice": 2,
+          "lineTotal": 6
+        },
+        {
+          "key": "napoleon",
+          "label": "Наполеон",
+          "quantity": 1,
+          "unitPrice": 2,
+          "lineTotal": 2
+        }
+      ],
+      "totalPrice": 8,
+      "clientPaid": 10,
+      "changeDue": 2,
+      "note": "",
+      "status": "done",
+      "createdAt": 1763467594608,
+      "inProgressAt": 1764696317398,
+      "readyAt": 1764885426829,
+      "doneAt": 1764885428288
+    },
+    {
+      "id": "o_dc78696803024fd2bd69b6310115ad24",
+      "number": 4,
+      "name": "Соня з Кимось 5 столик",
+      "itemsText": "Фруктова нарізка ×1 — 5,00 €\nМандарина ×4 — 1,00 €",
+      "items": [
+        {
+          "key": "fruitPlate",
+          "label": "Фруктова нарізка",
+          "quantity": 1,
+          "unitPrice": 5,
+          "lineTotal": 5
+        },
+        {
+          "key": "mandarin",
+          "label": "Мандарина",
+          "quantity": 4,
+          "unitPrice": 0.25,
+          "lineTotal": 1
+        }
+      ],
+      "totalPrice": 6,
+      "clientPaid": 10,
+      "changeDue": 4,
+      "note": "",
+      "status": "done",
+      "createdAt": 1763475940137,
+      "inProgressAt": 1764695804643,
+      "readyAt": 1764695805313,
+      "doneAt": 1764885419068
+    },
+    {
+      "id": "o_3d36278d912d43b18d8415885568aa5f",
+      "number": 6,
+      "name": "dssdsd",
+      "itemsText": "Латте ×2 — 4,00 EUR\nЧізкейк ×2 — 4,00 EUR\nФруктова нарізка ×1 — 5,00 EUR",
+      "status": "done",
+      "createdAt": 1764090249373,
+      "items": [
+        {
+          "key": "latte",
+          "label": "Латте",
+          "quantity": 2,
+          "unitPrice": 2.0,
+          "lineTotal": 4.0,
+          "isManual": false
+        },
+        {
+          "key": "cheesecake",
+          "label": "Чізкейк",
+          "quantity": 2,
+          "unitPrice": 2.0,
+          "lineTotal": 4.0,
+          "isManual": false
+        },
+        {
+          "key": "fruitPlate",
+          "label": "Фруктова нарізка",
+          "quantity": 1,
+          "unitPrice": 5.0,
+          "lineTotal": 5.0,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 13.0,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": "",
+      "inProgressAt": 1764692698803,
+      "readyAt": 1764694413092,
+      "doneAt": 1764885419686
+    },
+    {
+      "id": "o_fa5743ec09884c4e984f20e690e9707e",
+      "number": 7,
+      "name": "Маша стецюк",
+      "itemsText": "Латте ×2 — 4,00 EUR\nЧізкейк ×1 — 2,00 EUR\nНаполеон ×1 — 2,00 EUR\nГорішок ×3 — 1,50 EUR\nЗ Червоною рибою ×1 — 3,00 EUR\nФруктова нарізка ×1 — 5,00 EUR",
+      "status": "done",
+      "createdAt": 1764107228601,
+      "items": [
+        {
+          "key": "latte",
+          "label": "Латте",
+          "quantity": 2,
+          "unitPrice": 2.0,
+          "lineTotal": 4.0,
+          "isManual": false
+        },
+        {
+          "key": "cheesecake",
+          "label": "Чізкейк",
+          "quantity": 1,
+          "unitPrice": 2.0,
+          "lineTotal": 2.0,
+          "isManual": false
+        },
+        {
+          "key": "napoleon",
+          "label": "Наполеон",
+          "quantity": 1,
+          "unitPrice": 2.0,
+          "lineTotal": 2.0,
+          "isManual": false
+        },
+        {
+          "key": "horishok",
+          "label": "Горішок",
+          "quantity": 3,
+          "unitPrice": 0.5,
+          "lineTotal": 1.5,
+          "isManual": false
+        },
+        {
+          "key": "salmonCroissant",
+          "label": "З Червоною рибою",
+          "quantity": 1,
+          "unitPrice": 3.0,
+          "lineTotal": 3.0,
+          "isManual": false
+        },
+        {
+          "key": "fruitPlate",
+          "label": "Фруктова нарізка",
+          "quantity": 1,
+          "unitPrice": 5.0,
+          "lineTotal": 5.0,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 17.5,
+      "clientPaid": 50.0,
+      "changeDue": 32.5,
+      "note": "",
+      "inProgressAt": 1764696250532,
+      "readyAt": 1764885425815,
+      "doneAt": 1764885429052
+    },
+    {
+      "id": "o_d5c0b92388894ba1ab2b9d46b3294819",
+      "number": 13,
+      "name": "Maria",
+      "itemsText": "Медовик ×2 — 4,00 EUR\nФруктовий стакан ×2 — 6,00 EUR",
+      "status": "done",
+      "createdAt": 1764694355983,
+      "items": [
+        {
+          "key": "medovik",
+          "label": "Медовик",
+          "quantity": 2,
+          "unitPrice": 2.0,
+          "lineTotal": 4.0,
+          "isManual": false
+        },
+        {
+          "key": "fruitCup",
+          "label": "Фруктовий стакан",
+          "quantity": 2,
+          "unitPrice": 3.0,
+          "lineTotal": 6.0,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 10.0,
+      "clientPaid": 10.0,
+      "changeDue": 0.0,
+      "note": "",
+      "inProgressAt": 1764694374887,
+      "readyAt": 1764694411694,
+      "doneAt": 1764694786977
+    },
+    {
+      "id": "o_e644d339755a4aafa1343573781d50f3",
+      "number": 14,
+      "name": "",
+      "itemsText": "з Бужениною ×3 — 9,00 EUR",
+      "status": "done",
+      "createdAt": 1764696302668,
+      "items": [
+        {
+          "key": "hamCroissant",
+          "label": "з Бужениною",
+          "quantity": 3,
+          "unitPrice": 3.0,
+          "lineTotal": 9.0,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 9.0,
+      "clientPaid": 10.0,
+      "changeDue": 1.0,
+      "note": "",
+      "inProgressAt": 1764696305085,
+      "readyAt": 1764696305085,
+      "doneAt": 1764885420369
+    },
+    {
+      "id": "o_63c99e95b3524fd58a74de36e74132dc",
+      "number": 15,
+      "name": "",
+      "itemsText": "Латте ×1 — 2,00 EUR\nКакао ×1 — 1,50 EUR\nВафельний торт ×1 — 0,50 EUR",
+      "status": "done",
+      "createdAt": 1764885424484,
+      "items": [
+        {
+          "key": "latte",
+          "label": "Латте",
+          "quantity": 1,
+          "unitPrice": 2.0,
+          "lineTotal": 2.0,
+          "isManual": false
+        },
+        {
+          "key": "cocoa",
+          "label": "Какао",
+          "quantity": 1,
+          "unitPrice": 1.5,
+          "lineTotal": 1.5,
+          "isManual": false
+        },
+        {
+          "key": "waffleCake",
+          "label": "Вафельний торт",
+          "quantity": 1,
+          "unitPrice": 0.5,
+          "lineTotal": 0.5,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 4.0,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": "",
+      "inProgressAt": 1764885455605,
+      "readyAt": 1764885472006,
+      "doneAt": 1764885856722
+    },
+    {
+      "id": "o_3722125ef875498095aacff744cf63a8",
+      "number": 16,
+      "name": "",
+      "itemsText": "Наполеон ×2 — 4,00 EUR",
+      "status": "ready",
+      "createdAt": 1764885581157,
+      "items": [
+        {
+          "key": "napoleon",
+          "label": "Наполеон",
+          "quantity": 2,
+          "unitPrice": 2.0,
+          "lineTotal": 4.0,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 4.0,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": "",
+      "inProgressAt": 1764885756411,
+      "readyAt": 1764886258490
+    },
+    {
+      "id": "o_a6c82add754341ba8ff1078ad5da52f1",
+      "number": 20,
+      "name": "",
+      "itemsText": "Латте ×2 — 4,00 EUR\nФруктова нарізка ×1 — 5,00 EUR\nПобажання: David 😭",
+      "status": "in_progress",
+      "createdAt": 1764886712006,
+      "items": [
+        {
+          "key": "latte",
+          "label": "Латте",
+          "quantity": 2,
+          "unitPrice": 2.0,
+          "lineTotal": 4.0,
+          "isManual": false
+        },
+        {
+          "key": "fruitPlate",
+          "label": "Фруктова нарізка",
+          "quantity": 1,
+          "unitPrice": 5.0,
+          "lineTotal": 5.0,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 9.0,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": "David 😭",
+      "inProgressAt": 1766163218426
+    },
+    {
+      "id": "o_22cae2a5629641119e53b2b58daf9cce",
+      "number": 21,
+      "name": "Ізольда",
+      "itemsText": "Американо ×1 — 1,50 EUR\nЧай Lovare ×1 — 1,00 EUR\nМедовик ×1 — 2,50 EUR\nКекс ×1 — 1,00 EUR",
+      "status": "in_progress",
+      "createdAt": 1766159648083,
+      "items": [
+        {
+          "key": "americano",
+          "label": "Американо",
+          "quantity": 1,
+          "unitPrice": 1.5,
+          "lineTotal": 1.5,
+          "isManual": false
+        },
+        {
+          "key": "lovareTea",
+          "label": "Чай Lovare",
+          "quantity": 1,
+          "unitPrice": 1.0,
+          "lineTotal": 1.0,
+          "isManual": false
+        },
+        {
+          "key": "medovik",
+          "label": "Медовик",
+          "quantity": 1,
+          "unitPrice": 2.5,
+          "lineTotal": 2.5,
+          "isManual": false
+        },
+        {
+          "key": "cake",
+          "label": "Кекс",
+          "quantity": 1,
+          "unitPrice": 1.0,
+          "lineTotal": 1.0,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 6.0,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": "",
+      "inProgressAt": 1766160024948
+    },
+    {
+      "id": "o_ee2b10f0b536426ba4cb4e5deaaa2593",
+      "number": 22,
+      "name": "Земфіра",
+      "itemsText": "Какао ×1 — 1,50 EUR\nЧай Greenfield ×1 — 1,00 EUR\nЧізкейк ×1 — 2,50 EUR\nПобажання: Чай з лимоном додайте!!!",
+      "status": "new",
+      "createdAt": 1766159993093,
+      "items": [
+        {
+          "key": "cocoa",
+          "label": "Какао",
+          "quantity": 1,
+          "unitPrice": 1.5,
+          "lineTotal": 1.5,
+          "isManual": false
+        },
+        {
+          "key": "greenfieldTea",
+          "label": "Чай Greenfield",
+          "quantity": 1,
+          "unitPrice": 1.0,
+          "lineTotal": 1.0,
+          "isManual": false
+        },
+        {
+          "key": "cheesecake",
+          "label": "Чізкейк",
+          "quantity": 1,
+          "unitPrice": 2.5,
+          "lineTotal": 2.5,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 5.0,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": "Чай з лимоном додайте!!!"
+    },
+    {
+      "id": "o_feecacd8d3cf4bf5b180c8044bceabc4",
+      "number": 23,
+      "name": "",
+      "itemsText": "Капучино ×1 — 2,00 EUR\nЧізкейк ×1 — 2,50 EUR",
+      "status": "new",
+      "createdAt": 1766166165781,
+      "items": [
+        {
+          "key": "cappuccino",
+          "label": "Капучино",
+          "quantity": 1,
+          "unitPrice": 2.0,
+          "lineTotal": 2.0,
+          "isManual": false
+        },
+        {
+          "key": "cheesecake",
+          "label": "Чізкейк",
+          "quantity": 1,
+          "unitPrice": 2.5,
+          "lineTotal": 2.5,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 4.5,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": ""
+    },
+    {
+      "id": "o_2221a701481746308fe7f4ff1a3abba1",
+      "number": 24,
+      "name": "Соня і Марк 2 столик",
+      "itemsText": "Лате макіато ×1 — 2,00 EUR\nМедовик ×1 — 2,50 EUR",
+      "status": "new",
+      "createdAt": 1766166179252,
+      "items": [
+        {
+          "key": "latteMacchiato",
+          "label": "Лате макіато",
+          "quantity": 1,
+          "unitPrice": 2.0,
+          "lineTotal": 2.0,
+          "isManual": false
+        },
+        {
+          "key": "medovik",
+          "label": "Медовик",
+          "quantity": 1,
+          "unitPrice": 2.5,
+          "lineTotal": 2.5,
+          "isManual": false
+        }
+      ],
+      "totalPrice": 4.5,
+      "clientPaid": null,
+      "changeDue": 0.0,
+      "note": ""
+    }
+  ],
+  "lastNumber": 24
+}
