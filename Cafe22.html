@@ -1313,11 +1313,30 @@
       padding: 10px 14px;
       min-width: 44px;
       min-height: 44px;
+      /* Для мобільних пристроїв - збільшуємо область натискання */
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
     }
 
     #screenFullscreenBtn {
       left: 16px;
       font-size: 20px;
+    }
+
+    /* Альтернативний fullscreen режим для пристроїв без підтримки fullscreen API */
+    #screenView.fullscreen-fallback {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      margin: 0;
+      padding: 0;
+    }
+
+    #screenView.fullscreen-fallback .screen-control-btn {
+      display: none !important;
     }
 
     #screenLogoutBtn {
@@ -3547,34 +3566,118 @@
       if (!screenView) return;
 
       // Перевіряємо чи вже в fullscreen
-      if (
+      const isFullscreen =
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.mozFullScreenElement ||
-        document.msFullscreenElement
-      ) {
+        document.msFullscreenElement ||
+        document.webkitCurrentFullScreenElement;
+
+      if (isFullscreen) {
+        // Перевіряємо чи це fallback режим
+        if (screenView && screenView.classList.contains("fullscreen-fallback")) {
+          enableFullscreenFallback();
+          return;
+        }
+        
         // Виходимо з fullscreen
         if (document.exitFullscreen) {
-          document.exitFullscreen();
+          document.exitFullscreen().catch(err => console.log("Error exiting fullscreen:", err));
         } else if (document.webkitExitFullscreen) {
           document.webkitExitFullscreen();
+        } else if (document.webkitCancelFullScreen) {
+          document.webkitCancelFullScreen();
         } else if (document.mozCancelFullScreen) {
           document.mozCancelFullScreen();
         } else if (document.msExitFullscreen) {
           document.msExitFullscreen();
         }
+        updateFullscreenButton();
       } else {
-        // Входимо в fullscreen
+        // Входимо в fullscreen - спробуємо різні методи для різних браузерів та пристроїв
+        let fullscreenPromise = null;
+        
+        // Стандартний метод
         if (screenView.requestFullscreen) {
-          screenView.requestFullscreen();
-        } else if (screenView.webkitRequestFullscreen) {
-          screenView.webkitRequestFullscreen();
-        } else if (screenView.mozRequestFullScreen) {
-          screenView.mozRequestFullScreen();
-        } else if (screenView.msRequestFullscreen) {
-          screenView.msRequestFullscreen();
+          fullscreenPromise = screenView.requestFullscreen();
+        }
+        // WebKit (Safari, Chrome на iOS)
+        else if (screenView.webkitRequestFullscreen) {
+          fullscreenPromise = screenView.webkitRequestFullscreen();
+        }
+        // WebKit альтернативний (для iOS Safari)
+        else if (screenView.webkitEnterFullscreen) {
+          screenView.webkitEnterFullscreen();
+          return; // Цей метод не повертає Promise
+        }
+        // Mozilla
+        else if (screenView.mozRequestFullScreen) {
+          fullscreenPromise = screenView.mozRequestFullScreen();
+        }
+        // MS (IE/Edge)
+        else if (screenView.msRequestFullscreen) {
+          fullscreenPromise = screenView.msRequestFullscreen();
+        }
+        // Для мобільних пристроїв - спробуємо використати document
+        else if (document.documentElement.requestFullscreen) {
+          fullscreenPromise = document.documentElement.requestFullscreen();
+        }
+        else if (document.documentElement.webkitRequestFullscreen) {
+          fullscreenPromise = document.documentElement.webkitRequestFullscreen();
+        }
+        else if (document.documentElement.mozRequestFullScreen) {
+          fullscreenPromise = document.documentElement.mozRequestFullScreen();
+        }
+        else if (document.documentElement.msRequestFullscreen) {
+          fullscreenPromise = document.documentElement.msRequestFullscreen();
+        }
+
+        // Обробляємо Promise якщо він є
+        if (fullscreenPromise) {
+          fullscreenPromise
+            .then(() => {
+              // Успішно увійшли в fullscreen
+              // На мобільних пристроях можемо заблокувати орієнтацію
+              if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {
+                  // Ігноруємо помилки блокування орієнтації
+                });
+              }
+              updateFullscreenButton();
+            })
+            .catch(err => {
+              console.log("Error entering fullscreen:", err);
+              // Якщо не вдалося, спробуємо альтернативний метод для мобільних
+              if (screenView.webkitEnterFullscreen) {
+                screenView.webkitEnterFullscreen();
+                updateFullscreenButton();
+              } else {
+                // Fallback: використовуємо CSS для імітації fullscreen
+                enableFullscreenFallback();
+              }
+            });
+        } else {
+          // Якщо жоден метод не доступний, використовуємо fallback
+          enableFullscreenFallback();
         }
       }
+    }
+
+    // Fallback метод для пристроїв без підтримки fullscreen API
+    function enableFullscreenFallback() {
+      const screenView = document.getElementById("screenView");
+      if (!screenView) return;
+      
+      if (screenView.classList.contains("fullscreen-fallback")) {
+        // Виходимо з fallback fullscreen
+        screenView.classList.remove("fullscreen-fallback");
+        document.body.style.overflow = "";
+      } else {
+        // Входимо в fallback fullscreen
+        screenView.classList.add("fullscreen-fallback");
+        document.body.style.overflow = "hidden";
+      }
+      updateFullscreenButton();
     }
 
     // Оновлюємо текст кнопки при зміні fullscreen стану та приховуємо/показуємо кнопки
@@ -3582,11 +3685,16 @@
       const fullscreenBtn = document.getElementById("screenFullscreenBtn");
       const logoutBtn = document.getElementById("screenLogoutBtn");
       
+      // Перевіряємо fullscreen стан з підтримкою всіх браузерів та мобільних пристроїв
+      const screenView = document.getElementById("screenView");
       const isFullscreen =
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
+        document.webkitCurrentFullScreenElement ||
         document.mozFullScreenElement ||
-        document.msFullscreenElement;
+        document.msFullscreenElement ||
+        (document.fullscreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreen) ||
+        (screenView && screenView.classList.contains("fullscreen-fallback"));
 
       // Приховуємо або показуємо кнопки в залежності від стану fullscreen
       if (fullscreenBtn) {
@@ -3627,11 +3735,37 @@
       }
     }
 
-    // Слухаємо зміни fullscreen стану
+    // Слухаємо зміни fullscreen стану для всіх браузерів та мобільних пристроїв
     document.addEventListener("fullscreenchange", updateFullscreenButton);
     document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
+    document.addEventListener("webkitbeginfullscreen", updateFullscreenButton); // iOS Safari
+    document.addEventListener("webkitendfullscreen", updateFullscreenButton); // iOS Safari
     document.addEventListener("mozfullscreenchange", updateFullscreenButton);
     document.addEventListener("MSFullscreenChange", updateFullscreenButton);
+    
+    // Додаткові обробники для мобільних пристроїв
+    window.addEventListener("resize", function() {
+      // Перевіряємо fullscreen при зміні розміру вікна (корисно для мобільних)
+      setTimeout(updateFullscreenButton, 100);
+    });
+    
+    // Для iOS Safari та інших мобільних браузерів
+    if (document.addEventListener) {
+      document.addEventListener("webkitfullscreenchange", updateFullscreenButton, false);
+      document.addEventListener("webkitbeginfullscreen", updateFullscreenButton, false);
+      document.addEventListener("webkitendfullscreen", updateFullscreenButton, false);
+    }
+    
+    // Обробка виходу з fullscreen через клавіатуру або інші способи
+    document.addEventListener("keydown", function(e) {
+      // ESC вихід з fullscreen
+      if (e.key === "Escape" || e.keyCode === 27) {
+        const screenView = document.getElementById("screenView");
+        if (screenView && screenView.classList.contains("fullscreen-fallback")) {
+          enableFullscreenFallback();
+        }
+      }
+    });
 
     function renderScreenView() {
       const readyContainer = document.getElementById("readyContainer");
