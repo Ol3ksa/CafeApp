@@ -1303,12 +1303,65 @@
       min-height: 18px;
     }
 
-    #screenLogoutBtn {
+    .screen-control-btn {
       position: fixed;
       top: 16px;
-      right: 16px;
       margin: 0;
       z-index: 100;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      font-size: 18px;
+      padding: 10px 14px;
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    #screenFullscreenBtn {
+      left: 16px;
+      font-size: 20px;
+    }
+
+    #screenLogoutBtn {
+      right: 16px;
+    }
+
+    /* Приховуємо кнопки в fullscreen режимі */
+    :fullscreen .screen-control-btn,
+    :-webkit-full-screen .screen-control-btn,
+    :-moz-full-screen .screen-control-btn,
+    :-ms-fullscreen .screen-control-btn {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    /* Показуємо кнопки при hover в fullscreen */
+    :fullscreen:hover .screen-control-btn,
+    :-webkit-full-screen:hover .screen-control-btn,
+    :-moz-full-screen:hover .screen-control-btn,
+    :-ms-fullscreen:hover .screen-control-btn {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Альтернативний спосіб для кращої сумісності */
+    #screenView:fullscreen .screen-control-btn,
+    #screenView:-webkit-full-screen .screen-control-btn,
+    #screenView:-moz-full-screen .screen-control-btn,
+    #screenView:-ms-fullscreen .screen-control-btn {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #screenView:fullscreen:hover .screen-control-btn,
+    #screenView:-webkit-full-screen:hover .screen-control-btn,
+    #screenView:-moz-full-screen:hover .screen-control-btn,
+    #screenView:-ms-fullscreen:hover .screen-control-btn {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     /* Модальне вікно для вибору смаку чаю */
@@ -1537,7 +1590,8 @@
 
   <div id="screenView" style="display:none;">
     <div class="screen-inner">
-      <button class="btn secondary small" id="screenLogoutBtn" onclick="logout()" style="display:none;">Вийти</button>
+      <button class="btn secondary small screen-control-btn" id="screenFullscreenBtn" onclick="toggleFullscreen()" title="На весь екран">⛶</button>
+      <button class="btn secondary small screen-control-btn" id="screenLogoutBtn" onclick="logout()" style="display:none;">Вийти</button>
       <div class="screen-title">Готові замовлення</div>
       <div class="screen-sub">Будь ласка, підійдіть до стійки, коли побачите свій номер.</div>
       <div class="screen-meta">
@@ -3506,6 +3560,67 @@
 
       columnsRoot.innerHTML = html;
     }
+
+    function toggleFullscreen() {
+      const screenView = document.getElementById("screenView");
+      if (!screenView) return;
+
+      // Перевіряємо чи вже в fullscreen
+      if (
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      ) {
+        // Виходимо з fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      } else {
+        // Входимо в fullscreen
+        if (screenView.requestFullscreen) {
+          screenView.requestFullscreen();
+        } else if (screenView.webkitRequestFullscreen) {
+          screenView.webkitRequestFullscreen();
+        } else if (screenView.mozRequestFullScreen) {
+          screenView.mozRequestFullScreen();
+        } else if (screenView.msRequestFullscreen) {
+          screenView.msRequestFullscreen();
+        }
+      }
+    }
+
+    // Оновлюємо текст кнопки при зміні fullscreen стану
+    function updateFullscreenButton() {
+      const btn = document.getElementById("screenFullscreenBtn");
+      if (!btn) return;
+
+      const isFullscreen =
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
+
+      if (isFullscreen) {
+        btn.textContent = "⛶";
+        btn.title = "Зменшити";
+      } else {
+        btn.textContent = "⛶";
+        btn.title = "На весь екран";
+      }
+    }
+
+    // Слухаємо зміни fullscreen стану
+    document.addEventListener("fullscreenchange", updateFullscreenButton);
+    document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
+    document.addEventListener("mozfullscreenchange", updateFullscreenButton);
+    document.addEventListener("MSFullscreenChange", updateFullscreenButton);
 
     function renderScreenView() {
       const readyContainer = document.getElementById("readyContainer");
