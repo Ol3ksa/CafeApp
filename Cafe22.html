@@ -1324,25 +1324,12 @@
       right: 16px;
     }
 
-    /* Приховуємо кнопки в fullscreen режимі */
+    /* Приховуємо кнопки в fullscreen режимі - повністю, без можливості показати при hover */
     :fullscreen .screen-control-btn,
     :-webkit-full-screen .screen-control-btn,
     :-moz-full-screen .screen-control-btn,
     :-ms-fullscreen .screen-control-btn {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
-    }
-
-    /* Показуємо кнопки при hover в fullscreen */
-    :fullscreen:hover .screen-control-btn,
-    :-webkit-full-screen:hover .screen-control-btn,
-    :-moz-full-screen:hover .screen-control-btn,
-    :-ms-fullscreen:hover .screen-control-btn {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
+      display: none !important;
     }
 
     /* Альтернативний спосіб для кращої сумісності */
@@ -1350,18 +1337,7 @@
     #screenView:-webkit-full-screen .screen-control-btn,
     #screenView:-moz-full-screen .screen-control-btn,
     #screenView:-ms-fullscreen .screen-control-btn {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    #screenView:fullscreen:hover .screen-control-btn,
-    #screenView:-webkit-full-screen:hover .screen-control-btn,
-    #screenView:-moz-full-screen:hover .screen-control-btn,
-    #screenView:-ms-fullscreen:hover .screen-control-btn {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
+      display: none !important;
     }
 
     /* Модальне вікно для вибору смаку чаю */
