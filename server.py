@@ -227,6 +227,8 @@ def login():
 @require_role("admin", "screen")
 def list_orders():
     with _lock:
+        # Завжди завантажуємо свіжі дані з диску перед поверненням
+        _load_orders_from_disk()
         return jsonify(_orders)
 
 
@@ -358,6 +360,9 @@ def handle_connect(auth):
     role = _verify_token(token or "")
     if role not in {"admin", "screen"}:
         raise ConnectionRefusedError("unauthorized")
+    # Завжди завантажуємо свіжі дані з диску перед відправкою
+    with _lock:
+        _load_orders_from_disk()
     socketio.emit("orders_updated", _orders, room=request.sid)
 
 

@@ -3173,7 +3173,12 @@
       }
 
       document.getElementById("logoutBtn").style.display = authRole === "admin" && mode !== "analytics" ? "inline-flex" : "none";
-      document.getElementById("screenLogoutBtn").style.display = authRole === "screen" ? "inline-flex" : "none";
+      const screenLogoutBtn = document.getElementById("screenLogoutBtn");
+      if (screenLogoutBtn) {
+        screenLogoutBtn.style.display = authRole === "screen" ? "inline-flex" : "none";
+        // Оновлюємо fullscreen кнопки після зміни режиму
+        updateFullscreenButton();
+      }
 
       // Оновлюємо видимість мобільного меню
       updateMobileMenuVisibility();
@@ -3572,23 +3577,53 @@
       }
     }
 
-    // Оновлюємо текст кнопки при зміні fullscreen стану
+    // Оновлюємо текст кнопки при зміні fullscreen стану та приховуємо/показуємо кнопки
     function updateFullscreenButton() {
-      const btn = document.getElementById("screenFullscreenBtn");
-      if (!btn) return;
-
+      const fullscreenBtn = document.getElementById("screenFullscreenBtn");
+      const logoutBtn = document.getElementById("screenLogoutBtn");
+      
       const isFullscreen =
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.mozFullScreenElement ||
         document.msFullscreenElement;
 
-      if (isFullscreen) {
-        btn.textContent = "⛶";
-        btn.title = "Зменшити";
-      } else {
-        btn.textContent = "⛶";
-        btn.title = "На весь екран";
+      // Приховуємо або показуємо кнопки в залежності від стану fullscreen
+      if (fullscreenBtn) {
+        if (isFullscreen) {
+          fullscreenBtn.style.display = "none";
+          fullscreenBtn.textContent = "⛶";
+          fullscreenBtn.title = "Зменшити";
+        } else {
+          fullscreenBtn.style.display = "inline-flex";
+          fullscreenBtn.textContent = "⛶";
+          fullscreenBtn.title = "На весь екран";
+        }
+      }
+      
+      if (logoutBtn) {
+        if (isFullscreen) {
+          // Зберігаємо поточний display перед приховуванням
+          if (!logoutBtn.hasAttribute("data-original-display")) {
+            const currentDisplay = window.getComputedStyle(logoutBtn).display;
+            logoutBtn.setAttribute("data-original-display", currentDisplay);
+          }
+          logoutBtn.style.display = "none";
+        } else {
+          // Відновлюємо оригінальний display
+          const originalDisplay = logoutBtn.getAttribute("data-original-display");
+          if (originalDisplay) {
+            logoutBtn.style.display = originalDisplay;
+            logoutBtn.removeAttribute("data-original-display");
+          } else {
+            // Якщо немає збереженого значення, використовуємо логіку з authRole
+            if (authRole === "screen") {
+              logoutBtn.style.display = "inline-flex";
+            } else {
+              logoutBtn.style.display = "none";
+            }
+          }
+        }
       }
     }
 
@@ -4210,6 +4245,8 @@
       renderManualExtras();
       updateOrderPreview();
       renderStatusLegend();
+      // Перевіряємо fullscreen стан при завантаженні
+      updateFullscreenButton();
       
       // Ініціалізація нових функцій
       loadFavoriteCombos();
